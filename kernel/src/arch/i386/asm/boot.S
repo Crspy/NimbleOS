@@ -50,7 +50,6 @@ _start:
 	# See https://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html
 	# pushl %eax	# (magic number) this was already pushed previously
 	# pushl %ebx	# (multiboot header address) this was already pushed previously
-	pushl %esp	# (stack pointer)
 	cli
 	call kernel_main
 	add $12, %esp # cleanup the stack. useless here

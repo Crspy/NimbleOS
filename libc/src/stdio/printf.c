@@ -5,7 +5,6 @@
 #include <string.h>
 #include <ctype.h>
 
-
 int printf(const char *format, ...)
 {
     char **arg = (char **)&format;
@@ -46,22 +45,29 @@ int printf(const char *format, ...)
             switch (c)
             {
             case 'd':
+                itoa(*((int *)arg++), buf, 10);
+                break;
             case 'u':
+                utoa(*((int *)arg++), buf, 10);
+                break;
             case 'x':
             case 'X':
-                int base = 10;
-                if (c == 'x' || c == 'X')
-                    base = 16;
+                utoa(*((int *)arg++), buf, 16);
+                break;
+            }
 
-                itoa(*((int *)arg++), buf, base);
-
-                if(c == 'X')
+            switch (c)
+            {
+            case 'X':
+                for (size_t i = 0; buf[i]; ++i)
                 {
-                    for(size_t i = 0;buf[i];++i)
-                    {
-                        buf[i] = toupper(buf[i]);
-                    }
+                    buf[i] = toupper(buf[i]);
                 }
+                /* fall through */
+            case 'd':
+            case 'u':
+            case 'x':
+            
                 p = buf;
                 goto string;
                 break;

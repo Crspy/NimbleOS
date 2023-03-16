@@ -1,5 +1,5 @@
 
-char* itoa(int value, char* str, int base)
+char* utoa(unsigned int value, char* str, unsigned int base)
 {
     char* rc;
     char* ptr;
@@ -11,9 +11,6 @@ char* itoa(int value, char* str, int base)
     }
 
     rc = ptr = str;
-    if (value < 0 && base == 10) {
-        *ptr++ = '-';
-    }
 
     low = ptr;
 
@@ -32,3 +29,4 @@ char* itoa(int value, char* str, int base)
 
     return rc;
 }
+

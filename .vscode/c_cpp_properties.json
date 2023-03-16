@@ -1,27 +1,15 @@
 {
     "configurations": [
         {
-            "name": "NimbleOS",
+            "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/kernel/include",
-                "${workspaceFolder}/libc/include"
+                "${workspaceFolder}/**"
             ],
-            "browse": {
-                "path": [
-                    "${workspaceFolder}/kernel",
-                    "${workspaceFolder}/libc"
-                ]
-            },
-            "defines": [
-                "__STDC_HOSTED__ 0"
-            ],
-            "compilerArgs": [
-                "-Wall",
-                "-Wextra"
-            ],
-            "intelliSenseMode": "gcc-x86",
-            "cStandard": "gnu11",
-            "cppStandard": "c++14",
+            "defines": [],
+            "compilerPath": "/usr/bin/i686-elf-gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x86",
             "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],

@@ -27,7 +27,7 @@ $(KERNEL) $(SYMBOLS): $(OBJS) $(LIBK_DEP) linker.ld
 
 %.o: %.S
 	$(info [kernel] $@)
-	@$(CC) -c $< -o $@ $(CFLAGS)
+	@$(CC) -c $< -o $@ $(CFLAGS) -D__ASSEMBLY__
 
 build: $(KERNEL)
 

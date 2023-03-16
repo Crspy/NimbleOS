@@ -11,6 +11,9 @@ __attribute__((__noreturn__))
 void abort();
 
 char* itoa(int value, char* str, int base);
+char* utoa(unsigned int value, char* str,unsigned int base);
+
+int atoi(const char* s);
 
 #ifdef __cplusplus
 }

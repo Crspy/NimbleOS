@@ -89,7 +89,7 @@
 #define MULTIBOOT_INFO_VBE_INFO 0x00000800
 #define MULTIBOOT_INFO_FRAMEBUFFER_INFO 0x00001000
 
-#ifndef ASM_FILE
+#ifndef __ASSEMBLY__
 
 typedef unsigned char multiboot_uint8_t;
 typedef unsigned short multiboot_uint16_t;
@@ -141,6 +141,19 @@ struct multiboot_elf_section_header_table
 };
 typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
 
+typedef union
+{
+  multiboot_uint32_t raw_val;
+  struct
+  {
+    multiboot_uint8_t drive_number;
+    multiboot_uint8_t part1;
+    multiboot_uint8_t part2;
+    multiboot_uint8_t part3;
+  };
+
+} boot_device_t;
+
 typedef enum
 {
   MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED,
@@ -157,8 +170,8 @@ struct multiboot_info
   multiboot_uint32_t mem_lower;
   multiboot_uint32_t mem_upper;
 
-  /* "root" partition */
-  multiboot_uint32_t boot_device;
+  /* The operating system may use this field as a hint for determining its own root device, but is not required to. */
+  boot_device_t boot_device;
 
   /* Kernel command line */
   multiboot_uint32_t cmdline;
@@ -279,6 +292,8 @@ struct multiboot_apm_info
   multiboot_uint16_t dseg_len;
 };
 
-#endif /* ! ASM_FILE */
+void dump_multiboot_info(multiboot_info_t *mbi);
+
+#endif /* __ASSEMBLY__ */
 
 #endif /* ! MULTIBOOT_HEADER */
