@@ -1,0 +1,15 @@
+*.mod
+*.iso
+*.o
+*.pyc
+*.log
+*.ini
+*.bin
+*.out
+*.a
+*.map
+*.img
+misc/grub.cfg
+misc/root
+isodir
+sysroot

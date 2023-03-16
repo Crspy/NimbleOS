@@ -1,0 +1,2 @@
+ldsym global 'isodir/modules/symbols.map'
+c

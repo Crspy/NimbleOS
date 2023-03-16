@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "name": "NimbleOS",
+            "includePath": [
+                "${workspaceFolder}/kernel/include",
+                "${workspaceFolder}/libc/include"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/kernel",
+                    "${workspaceFolder}/libc"
+                ]
+            },
+            "defines": [
+                "__STDC_HOSTED__ 0"
+            ],
+            "compilerArgs": [
+                "-Wall",
+                "-Wextra"
+            ],
+            "intelliSenseMode": "gcc-x86",
+            "cStandard": "gnu11",
+            "cppStandard": "c++14",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        }
+    ],
+    "version": 4
+}
