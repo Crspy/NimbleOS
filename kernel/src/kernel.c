@@ -34,7 +34,7 @@ void multiboot_info(multiboot_info_t *mbi, uint32_t magic)
 	}
 
 	/* Print out the flags. */
-	printf("flags = 0x%x\n", (unsigned)mbi->flags);
+	printf("flags = 0x%X\n", (unsigned)mbi->flags);
 
 	/* Are mem_* valid? */
 	if (CHECK_FLAG(mbi->flags, 0))

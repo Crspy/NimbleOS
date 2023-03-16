@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 
 int printf(const char *format, ...)
@@ -47,11 +48,20 @@ int printf(const char *format, ...)
             case 'd':
             case 'u':
             case 'x':
+            case 'X':
                 int base = 10;
-                if (c == 'x')
+                if (c == 'x' || c == 'X')
                     base = 16;
 
                 itoa(*((int *)arg++), buf, base);
+
+                if(c == 'X')
+                {
+                    for(size_t i = 0;buf[i];++i)
+                    {
+                        buf[i] = toupper(buf[i]);
+                    }
+                }
                 p = buf;
                 goto string;
                 break;
