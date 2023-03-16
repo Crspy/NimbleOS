@@ -37,18 +37,23 @@ stack_top:
 _start:
 	movl $stack_top, %esp
 
+	# Save %eax that contains the magic number
+	pushl %eax
+	# Save %ebx that contains the multiboot header address
+	pushl %ebx
+
 	# Call the global constructors.
 	call _init
 
 	# Transfer control to the main kernel.
 	# Pass the multiboot header adress and magic number.
 	# See https://www.gnu.org/software/grub/manual/multiboot/html_node/Machine-state.html
-	pushl %eax
-	pushl %esp
-	pushl %ebx
-
+	# pushl %eax	# (magic number) this was already pushed previously
+	# pushl %ebx	# (multiboot header address) this was already pushed previously
+	pushl %esp	# (stack pointer)
 	cli
 	call kernel_main
+	add $12, %esp # cleanup the stack. useless here
 
 	# Hang if kernel_main unexpectedly returns.
 	cli

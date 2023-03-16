@@ -9,7 +9,7 @@
 
 void multiboot_info(multiboot_info_t *mbi, uint32_t magic);
 
-void kernel_main(multiboot_info_t *mbi, uintptr_t esp, uint32_t magic)
+void kernel_main(uintptr_t esp,multiboot_info_t *mbi, uint32_t magic)
 {
 	terminal_init();
 

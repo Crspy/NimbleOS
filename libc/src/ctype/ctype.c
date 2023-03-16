@@ -56,17 +56,17 @@ int isxdigit(int c) {
 }
 
 int tolower(int c) {
-    if (!isalpha(c) || islower(c)) {
+    if (!isalpha(c)) {
         return c;
     }
 
-    return c + 32;
+    return c | 32;
 }
 
 int toupper(int c) {
-    if (!isalpha(c) || isupper(c)) {
+    if (!isalpha(c)) {
         return c;
     }
 
-    return c - 32;
+    return c & ~32;
 }
