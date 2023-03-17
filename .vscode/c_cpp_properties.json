@@ -3,12 +3,13 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/kernel/include",
+                "${workspaceFolder}/libc/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/i686-elf-gcc",
-            "cStandard": "c11",
-            "cppStandard": "c++17",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
             "intelliSenseMode": "linux-gcc-x86",
             "configurationProvider": "ms-vscode.makefile-tools"
         }

@@ -1,7 +1,7 @@
 #include <kernel/irq.h>
 #include <kernel/cpu.h>
 #include <kernel/idt.h>
-#include <kernel/com.h>
+#include <kernel/pmio.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -46,7 +46,7 @@ void irq_handler(registers_t *regs)
 	// Don't annoy the PIC with software interrupts
 	if (regs->int_no >= IRQ0 && regs->int_no <= IRQ15)
 	{
-		irq_sendEOI(regs->int_no);
+		irq_send_eoi(regs->int_no);
 
 	}
 	STI();

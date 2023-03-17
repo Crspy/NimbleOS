@@ -1,4 +1,4 @@
-#include <kernel/com.h>
+#include <kernel/pmio.h>
 
 uint16_t inports(uint16_t port) {
 	uint16_t rv;

@@ -67,7 +67,13 @@ void irq15();
 #define IRQ15 47
 
 
-static inline void irq_sendEOI(uint32_t irq)
+/*
+* send an "End-of-interrupt" command.
+* This is issued to the PIC chips at the end of an IRQ-based interrupt routine
+* If the IRQ came from the Master PIC, it is sufficient to issue this command only to the Master PIC,
+* however if the IRQ came from the Slave PIC, it is necessary to issue the command to both PIC chips.
+*/
+static inline void irq_send_eoi(uint32_t irq)
 {
     // Received from slave
     if (irq > IRQ7)
@@ -75,8 +81,7 @@ static inline void irq_sendEOI(uint32_t irq)
         outportb(PIC2_CMD, PIC_EOI);
     }
 
-    // Not a bug: EOIs must be sent to both master and slave if the
-    // interrupt was on a slave line
+    // we have to send an EOI to the master regardless of the IRQ source
     outportb(PIC1_CMD, PIC_EOI);
 }
 

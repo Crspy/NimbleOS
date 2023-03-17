@@ -1,5 +1,5 @@
-#ifndef COM_H
-#define COM_H
+#ifndef PMIO_H
+#define PMIO_H
 
 #include <stdint.h>
 
@@ -21,4 +21,4 @@ void outportsm(uint16_t port, unsigned char * data, uint32_t size);
 // which is often used during POST to log information on the motherboard's hex display but almost always unused after boot.
 void io_wait(void);
 
-#endif
+#endif /* PMIO_H */

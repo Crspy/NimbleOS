@@ -14,6 +14,7 @@ uint32_t timer_get_tick();
 #define PIT_1 0x41
 #define PIT_2 0x42
 #define PIT_CMD 0x43
-#define PIT_SET 0x36    // square wave generator
+
+#define PIT_MODE 0x36    // square wave generator (operating mode)
 
 #endif

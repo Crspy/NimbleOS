@@ -11,7 +11,7 @@
 #include <kernel/timer.h>
 #include <kernel/cpu.h>
 
-void kernel_main(multiboot_info_t *mbi, uint32_t magic)
+void kernel_main(multiboot_info_t *, uint32_t magic)
 {
 	terminal_init();
 	gdt_init();
@@ -27,7 +27,6 @@ void kernel_main(multiboot_info_t *mbi, uint32_t magic)
 		return;
 	}
 
-	
 	uint32_t start = timer_get_tick();
 	uint32_t dur = 1000; 
 	while (1)
