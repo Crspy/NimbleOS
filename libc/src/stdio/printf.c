@@ -44,6 +44,9 @@ int printf(const char *format, ...)
 
             switch (c)
             {
+            case 'b': /* non-standard */
+                utoa(*((int *)arg++), buf, 2);
+                break;
             case 'd':
                 itoa(*((int *)arg++), buf, 10);
                 break;
@@ -71,11 +74,12 @@ int printf(const char *format, ...)
                     buf[i] = toupper(buf[i]);
                 }
                 /* fall through */
+            
             case 'd':
             case 'u':
             case 'x':
             case 'p':
-
+            case 'b': 
                 p = buf;
                 goto string;
                 break;
