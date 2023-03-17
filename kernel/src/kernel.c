@@ -18,7 +18,7 @@ void kernel_main(multiboot_info_t *, uint32_t magic)
 	idt_init();
 	irq_init();
 	
-	timer_init(1000); // 1000HZ -> timer_tick = 1ms
+	timer_init();
 
 	/* Am I booted by a Multiboot-compliant boot loader? */
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
@@ -27,15 +27,15 @@ void kernel_main(multiboot_info_t *, uint32_t magic)
 		return;
 	}
 
-	uint32_t start = timer_get_tick();
-	uint32_t dur = 1000; 
+	double start = timer_get_time();
+	double dur_s = 2;
 	while (1)
 	{
-		uint32_t ntick = timer_get_tick();
-		if ((ntick - start) >= dur)
+		double now = timer_get_time();
+		if ((now - start) >= dur_s)
 		{
-			start = ntick;
-			printf("%d ticks passed\n", dur); // this will get printed every 1000 ms
+			start = now;
+			printf("%d s passed\n", (int)dur_s); // this will get printed every 2 seconds
 		}
 		HLT();
 	}

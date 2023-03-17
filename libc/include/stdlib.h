@@ -1,7 +1,6 @@
-#ifndef _STDLIB_H
-#define _STDLIB_H 1
+#ifndef STDLIB_H
+#define STDLIB_H
 
-#include <sys/cdefs.h>
 #include <std_abs.h>
 
 #ifdef __cplusplus

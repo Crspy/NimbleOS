@@ -3,11 +3,14 @@
 
 #include <kernel/isr.h>
 
-void timer_init(uint32_t desired_freq_hz);
+void timer_init();
 void timer_callback(registers_t* regs);
 uint32_t timer_get_tick();
+double timer_get_time();
+
 
 #define TIMER_IRQ IRQ0
+#define TIMER_FREQ 1000 // in HZ
 #define TIMER_QUOTIENT 1193182
 
 #define PIT_0 0x40

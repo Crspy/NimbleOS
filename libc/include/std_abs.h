@@ -1,25 +1,19 @@
-#ifndef _STD_ABS_H
-#define _STD_ABS_H 1
+#ifndef STD_ABS_H
+#define STD_ABS_H
 
-#include <sys/cdefs.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-    static inline int abs(int x)
-    {
-        return x >= 0 ? x : -x;
-    }
-    static inline long labs(long x)
-    {
-        return x >= 0 ? x : -x;
-    }
-    static inline long long llabs(long long x)
-    {
-        return x >= 0 ? x : -x;
-    }
+
+#define DEF_ABS(type,name) \
+static inline type name(type x)  { return x >= 0 ? x : -x; }
+DEF_ABS(int,abs)
+DEF_ABS(long,labs)
+DEF_ABS(long long,llabs)
+
 
 #ifdef __cplusplus
 }

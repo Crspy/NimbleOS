@@ -35,8 +35,6 @@ void irq_init(void)
 
 void irq_handler(registers_t *regs)
 {
-	CLI();
-
 	if (irq_handlers[regs->int_no])
 	{
 		handler_t handler = irq_handlers[regs->int_no];
@@ -53,7 +51,7 @@ void irq_handler(registers_t *regs)
 		irq_send_eoi(regs->int_no);
 
 	}
-	STI();
+	STI(); // re-enable interrupts since they were disabled at isr handler in assembly
 }
 
 void irq_register_handler(uint8_t irq, handler_t handler)
