@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <kernel/tty.h>
-#include <kernel/vga.h>
 #include <kernel/multiboot.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
@@ -14,7 +13,7 @@
 
 void kernel_main(multiboot_info_t *, uint32_t magic)
 {
-	terminal_init();
+	term_init();
 	gdt_init();
 	idt_init();
 	irq_init();
@@ -28,9 +27,9 @@ void kernel_main(multiboot_info_t *, uint32_t magic)
 	}
 
 	printf("Welcome to ");
-	terminal_setcolor(make_color(COLOR_WHITE, COLOR_BLACK));
+	term_setcolor(COLOR_WHITE, COLOR_BLACK);
 	printf("NimbleOS");
-	terminal_setcolor(make_color(COLOR_YELLOW, COLOR_BLACK));
+	term_setcolor(COLOR_YELLOW, COLOR_BLACK);
 	printf(" v1.0 !\n");
 
 	uint32_t time_start = timer_get_time();
@@ -39,6 +38,7 @@ void kernel_main(multiboot_info_t *, uint32_t magic)
 		if (time_now != time_start) {
 			time_start = time_now;
 			printf("time: %d\n", time_now); // will print every 1s
+			term_change_bg_color(time_now % COLOR_COUNT);
 		}
 		HLT(); // halt until timer irq wakes us up
 	}

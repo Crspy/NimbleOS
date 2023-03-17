@@ -8,7 +8,7 @@ int putchar(int ic)
 {
 #if _KERNEL_
 	char c = (char) ic;
-	terminal_putchar(c);
+	term_putchar(c);
 #else
 	// TODO: You need to implement a write system call.
 #endif
