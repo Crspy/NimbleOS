@@ -3,6 +3,17 @@
 
 #include <stdint.h>
 
+// flags bits
+#define IDT_ENTRY_PRES(x)        ((x) << 7) // Present
+#define IDT_ENTRY_PRIV(x)        (((x) &  0x03) << 0x05)   // Set privilege level (0 - 3)
+#define IDT_ENTRY_TYPE_TASK_GATE 0x5
+#define IDT_ENTRY_TYPE_16BIT_INTERRUPT_GATE 0x6
+#define IDT_ENTRY_TYPE_16BIT_TRAP_GATE 0x7
+#define IDT_ENTRY_TYPE_32BIT_INTERRUPT_GATE 0xE
+#define IDT_ENTRY_TYPE_32BIT_TRAP_GATE 0xF
+
+#define IDT_ENTRY_FLAGS IDT_ENTRY_PRES(1) | IDT_ENTRY_PRIV(0) | IDT_ENTRY_TYPE_32BIT_INTERRUPT_GATE  // 0x8E
+
 
 typedef struct {
 	uint16_t base_low;
@@ -17,7 +28,7 @@ typedef struct {
 	uint32_t base;
 } __attribute__ ((packed)) idt_entry_ptr_t;
 
-void init_idt();
+void idt_init();
 void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags);
 void idt_load(uint32_t idt_ptr);
 

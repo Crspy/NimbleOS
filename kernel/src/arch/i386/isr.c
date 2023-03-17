@@ -12,8 +12,4 @@ static void print_registers(registers_t *reg) {
 void isr_handler(registers_t* regs) {
 	printf("interrupt %d triggered\n",regs->int_no);
 	print_registers(regs);
-	for(;;)
-	{
-		asm("hlt");
-	}
 }

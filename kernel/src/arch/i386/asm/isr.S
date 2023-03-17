@@ -8,7 +8,7 @@
 		cli
 		push $0
 		push $\num
-		jmp isr_common
+		jmp isr_common_handler
 .endm
 
 .macro ISR_ERR num
@@ -16,7 +16,7 @@
 	isr\num:
 		cli
 		push $\num
-		jmp isr_common
+		jmp isr_common_handler
 .endm
 
 ISR_NOERR 0
@@ -55,8 +55,8 @@ ISR_NOERR 31
 .extern isr_handler
 .type isr_handler, @function
 
-isr_common:
-	pusha       
+isr_common_handler:
+	pushal       
 
 	mov %ds, %ax   # save data segment selector
 	push %eax
@@ -77,6 +77,6 @@ isr_common:
 	mov %ax, %fs
 	mov %ax, %gs
 
-	popa
+	popal
 	add $8, %esp # clean up the pushed arguments (err code , isr no)
 	iret

@@ -38,7 +38,7 @@ gdt_entry_ptr_t gdt_ptr;
 idt_entry_t idt_entries[256];
 idt_entry_ptr_t idt_entry_ptr;
 
-void init_gdt() {
+void gdt_init() {
 	
 	gdt_ptr.limit = (sizeof(gdt_entry_t)*5) - 1;
 	gdt_ptr.base = (uint32_t) &gdt_entries;

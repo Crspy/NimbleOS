@@ -2,6 +2,8 @@
     "files.associations": {
         "gdt.h": "c",
         "stdio.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "timer.h": "c",
+        "cpu.h": "c"
     }
 }

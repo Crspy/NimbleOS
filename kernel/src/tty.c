@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include <kernel/vga.h>
+#include <kernel/tty.h>
+
 
 size_t terminal_row;
 size_t terminal_column;
@@ -25,7 +27,7 @@ void terminal_reset() {
 void terminal_init() {
 	terminal_row = 0;
 	terminal_column = 0;
-	terminal_color = make_color(COLOR_LIGHT_GREEN,COLOR_BLACK);
+	terminal_color = make_color(COLOR_LIGHT_GREY, COLOR_DARK_GREY);
 	terminal_buffer = VGA_MEMORY;
 	terminal_reset();
 }
