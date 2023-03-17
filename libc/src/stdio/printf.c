@@ -54,6 +54,13 @@ int printf(const char *format, ...)
             case 'X':
                 utoa(*((int *)arg++), buf, 16);
                 break;
+            case 'p':
+                // write "0x" as a suffix
+                putchar('0');
+                putchar('x');
+                written += 2;
+                utoa(*((int *)arg++), buf, 16);
+                break;
             }
 
             switch (c)
@@ -67,7 +74,8 @@ int printf(const char *format, ...)
             case 'd':
             case 'u':
             case 'x':
-            
+            case 'p':
+
                 p = buf;
                 goto string;
                 break;

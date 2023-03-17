@@ -42,6 +42,10 @@ void irq_handler(registers_t *regs)
 		handler_t handler = irq_handlers[regs->int_no];
 		handler(regs);
 	}
+	else
+	{
+		printf("Unhandled IRQ%u\n",regs->int_no);
+	}
 
 	// Don't annoy the PIC with software interrupts
 	if (regs->int_no >= IRQ0 && regs->int_no <= IRQ15)
