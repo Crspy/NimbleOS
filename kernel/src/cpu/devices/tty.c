@@ -27,13 +27,13 @@ void terminal_reset() {
 void terminal_init() {
 	terminal_row = 0;
 	terminal_column = 0;
-	terminal_color = make_color(COLOR_LIGHT_GREY, COLOR_DARK_GREY);
+	terminal_color = make_color(COLOR_WHITE, COLOR_BLACK);
 	terminal_buffer = VGA_MEMORY;
 	terminal_reset();
 }
 
-void terminal_setcolor(uint8_t color) {
-	terminal_color = color;
+void terminal_setcolor(uint8_t color_pair) {
+	terminal_color = color_pair;
 }
 
 void terminal_putchar_at(char c, size_t x, size_t y) {

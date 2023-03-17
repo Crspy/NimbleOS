@@ -11,13 +11,13 @@
 #include <kernel/timer.h>
 #include <kernel/cpu.h>
 
+
 void kernel_main(multiboot_info_t *, uint32_t magic)
 {
 	terminal_init();
 	gdt_init();
 	idt_init();
 	irq_init();
-	
 	timer_init();
 
 	/* Am I booted by a Multiboot-compliant boot loader? */
@@ -27,16 +27,19 @@ void kernel_main(multiboot_info_t *, uint32_t magic)
 		return;
 	}
 
-	double start = timer_get_time();
-	double dur_s = 2;
-	while (1)
-	{
-		double now = timer_get_time();
-		if ((now - start) >= dur_s)
-		{
-			start = now;
-			printf("%d s passed\n", (int)dur_s); // this will get printed every 2 seconds
+	printf("Welcome to ");
+	terminal_setcolor(make_color(COLOR_WHITE, COLOR_BLACK));
+	printf("NimbleOS");
+	terminal_setcolor(make_color(COLOR_YELLOW, COLOR_BLACK));
+	printf(" v1.0 !\n");
+
+	uint32_t time_start = timer_get_time();
+	while (1) {
+		uint32_t time_now = timer_get_time();
+		if (time_now != time_start) {
+			time_start = time_now;
+			printf("time: %d\n", time_now); // will print every 1s
 		}
-		HLT();
+		HLT(); // halt until timer irq wakes us up
 	}
 }
