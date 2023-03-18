@@ -29,13 +29,18 @@ typedef enum {
 	COLOR_COUNT
 } term_vga_color;
 
-void term_init();
+void term_init(void);
 void term_putchar_at(char c, size_t x, size_t y);
 void term_setcolor(term_vga_color fg, term_vga_color bg);
+void term_set_blink(bool blink);
 void term_change_bg_color(term_vga_color bg);
-void term_scrolldown();
+void term_scrolldown(void);
 void term_putchar(char c);
 void term_write(const char* data, size_t size);
 void term_writestring(const char* data);
+
+// Returns true if in an ANSI sequence
+// ANSI escape sequence: \x1B[param;param2...end_char
+bool term_interpret_ansi(char c);
 
 #endif

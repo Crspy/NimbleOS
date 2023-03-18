@@ -26,19 +26,16 @@ void kernel_main(multiboot_info_t *, uint32_t magic)
 		return;
 	}
 
-	printf("Welcome to ");
-	term_setcolor(COLOR_WHITE, COLOR_BLACK);
-	printf("NimbleOS");
-	term_setcolor(COLOR_YELLOW, COLOR_BLACK);
-	printf(" v1.0 !\n");
+	printf("Welcome to \x1B[0;33mNimble OS\x1B[37m v1.0 !\n\n");
 
 	uint32_t time_start = timer_get_time();
-	while (1) {
+	while (1) 
+	{
 		uint32_t time_now = timer_get_time();
-		if (time_now != time_start) {
+		if (time_now != time_start) 
+		{
 			time_start = time_now;
 			printf("time: %d\n", time_now); // will print every 1s
-			term_change_bg_color(time_now % COLOR_COUNT);
 		}
 		HLT(); // halt until timer irq wakes us up
 	}

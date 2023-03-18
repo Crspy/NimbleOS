@@ -1,69 +1,103 @@
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
+#include <kernel/pmio.h>
 #include <kernel/tty.h>
 
-#define VGA_ENTRY(x, y) term_buffer[(y)*VGA_WIDTH+(x)]
+#define VGA_ENTRY(x, y) term_buffer[(y)*VGA_WIDTH + (x)]
 
 uint32_t term_row;
 uint32_t term_column;
 uint8_t term_color;
-uint16_t* term_buffer;
+uint16_t *term_buffer;
 
 // Helper functions
-static uint8_t term_make_color(term_vga_color fg, term_vga_color bg) {
+static uint8_t term_make_color(term_vga_color fg, term_vga_color bg)
+{
 	return fg | bg << 4;
 }
 
-// Entry format: [ BLINK BG BG BG FG FG FG FG | C C C C C C C C ]
-//               [           8-bits           |      8-bits     ]
-static uint16_t term_make_entry(char c, uint8_t color) {
+static uint16_t term_make_entry(char c, uint8_t color)
+{
+	// Entry format: [ BLINK BG BG BG FG FG FG FG | C C C C C C C C ]
+	//               [           8-bits           |      8-bits     ]
 	uint16_t c16 = c;
 	uint16_t color16 = color;
 	return c16 | color16 << 8;
 }
 
-static uint8_t term_get_fg_color() {
+static uint8_t term_get_fg_color()
+{
 	return term_color & 0x000F;
 }
 
-static uint8_t term_get_bg_color() {
+static uint8_t term_get_bg_color()
+{
 	return term_color >> 4;
 }
 
-static void term_set_bg_color(term_vga_color color) {
+static void term_set_bg_color(term_vga_color color)
+{
 	term_color = term_make_color(term_get_fg_color(), color);
 }
 
-static void term_set_fg_color(term_vga_color color) {
+static void term_set_fg_color(term_vga_color color)
+{
 	term_color = term_make_color(color, term_get_bg_color());
 }
 
 // Terminal handling functions
-void term_init() {
+void term_init(void)
+{
+	// uint8_t status = inportb(0x3DA);
+	// uint16_t port_addr = 0x3C0;
+	// outportb(port_addr, 0x10);
+	// uint8_t status2 = inportb(port_addr + 1);
+	// status2 |= (1 << 3);
+	// outportb(port_addr, status2);
+	// status = inportb(0x3DA);
+	// outportb(port_addr, 0x30);
+
 	uint16_t entry = term_make_entry(' ', term_color);
-	term_buffer = (uint16_t*) VGA_MEMORY;
+	term_buffer = (uint16_t *)VGA_MEMORY;
 	term_color = term_make_color(COLOR_WHITE, COLOR_BLACK);
 	term_row = 0;
 	term_column = 0;
 
-	for (uint32_t x = 0; x < VGA_WIDTH; x++) {
-		for (uint32_t y = 0; y < VGA_HEIGHT; y++) {
+	for (uint32_t x = 0; x < VGA_WIDTH; x++)
+	{
+		for (uint32_t y = 0; y < VGA_HEIGHT; y++)
+		{
 			VGA_ENTRY(x, y) = entry;
 		}
 	}
 }
 
-void term_setcolor(term_vga_color fg, term_vga_color bg) {
+void term_setcolor(term_vga_color fg, term_vga_color bg)
+{
 	term_color = term_make_color(fg, bg);
 }
 
-void term_change_bg_color(term_vga_color bg) {
-	for (uint32_t x = 0; x < VGA_WIDTH; x++) {
-		for (uint32_t y = 0; y < VGA_HEIGHT; y++) {
+void term_set_blink(bool blink)
+{
+#define VGA_ENTRY_BLINK_MASK (1 << 7)
+
+	if (blink)
+	{
+		term_color |= VGA_ENTRY_BLINK_MASK;
+	}
+	else
+	{
+		term_color &= ~VGA_ENTRY_BLINK_MASK;
+	}
+}
+
+void term_change_bg_color(term_vga_color bg)
+{
+	for (uint32_t x = 0; x < VGA_WIDTH; x++)
+	{
+		for (uint32_t y = 0; y < VGA_HEIGHT; y++)
+		{
 			uint16_t entry = VGA_ENTRY(x, y);
 			char c = entry & 0xFF;
 			term_vga_color fg = (entry & 0x0F00) >> 8;
@@ -74,21 +108,28 @@ void term_change_bg_color(term_vga_color bg) {
 	term_set_bg_color(bg);
 }
 
-void term_putchar_at(char c, uint32_t x, uint32_t y) {
-	if (y >= VGA_HEIGHT || x >= VGA_WIDTH) {
+void term_putchar_at(char c, uint32_t x, uint32_t y)
+{
+	if (y >= VGA_HEIGHT || x >= VGA_WIDTH)
+	{
 		return;
 	}
 
 	VGA_ENTRY(x, y) = term_make_entry(c, term_color);
 }
 
-void term_scrolldown() {
-	for (uint32_t y = 0; y < VGA_HEIGHT; y++) {
-		for (uint32_t x = 0; x < VGA_WIDTH; x++) {
-			if (y < VGA_HEIGHT-1) {
-				VGA_ENTRY(x, y) = VGA_ENTRY(x, y+1);
+void term_scrolldown(void)
+{
+	for (uint32_t y = 0; y < VGA_HEIGHT; y++)
+	{
+		for (uint32_t x = 0; x < VGA_WIDTH; x++)
+		{
+			if (y < VGA_HEIGHT - 1)
+			{
+				VGA_ENTRY(x, y) = VGA_ENTRY(x, y + 1);
 			}
-			else { // last line
+			else
+			{ // last line
 				VGA_ENTRY(x, y) = term_make_entry(' ', term_color);
 			}
 		}
@@ -97,39 +138,240 @@ void term_scrolldown() {
 	term_row--;
 }
 
-void term_putchar(char c) {
-	if (c == '\n' || c == '\r') {
+void term_putchar(char c)
+{
+	if (c == '\n' || c == '\r')
+	{
 		term_row += 1;
 		term_column = 0;
 	}
-	else if (c == '\t') {
-		for (int i = 0; i < 4; i++) {
+	else if (c == '\t')
+	{
+		for (int i = 0; i < 4; i++)
+		{
 			term_putchar_at(' ', term_column++, term_row);
 		}
 	}
 
-	if (term_column >= VGA_WIDTH) {
+	if (term_column >= VGA_WIDTH)
+	{
 		term_row += 1;
 		term_column = 0;
 	}
 
-	if (term_row >= VGA_HEIGHT) {
+	if (term_row >= VGA_HEIGHT)
+	{
 		term_scrolldown();
 	}
 
-	if (!isprint(c))
+	if (term_interpret_ansi(c) || !isprint(c))
 		return;
 
 	term_putchar_at(c, term_column++, term_row);
 }
 
-void term_write(const char* data, uint32_t size) {
-	for (uint32_t i = 0; i < size; i++) {
+void term_write(const char *data, uint32_t size)
+{
+	for (uint32_t i = 0; i < size; i++)
+	{
 		term_putchar(data[i]);
 	}
 }
 
-void term_write_string(const char* data) {
+void term_write_string(const char *data)
+{
 	term_write(data, strlen(data));
 }
 
+bool term_interpret_ansi(char c)
+{
+	typedef enum
+	{
+		normal,
+		bracket,
+		params
+	} state_t;
+
+	static state_t state = normal;	   // State tracker
+	static char buf[32] = "";		   // Stores the string for 1 param
+	static uint32_t args[32] = {0};	   // Stores the parsed params
+	static uint32_t current_arg = 0;   // Number of params
+	static uint32_t current_index = 0; // Number of chars in current param
+	static uint32_t saved_row = 0;
+	static uint32_t saved_col = 0;
+
+	if (state == normal)
+	{
+		if (c == 0x1B)
+		{ // Escape character
+			state = bracket;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (state == bracket)
+	{
+		if (c == '[')
+		{
+			state = params;
+		}
+		else
+		{
+			state = normal;
+			return false;
+		}
+	}
+	else if (state == params)
+	{
+		if (c == ';')
+		{
+			buf[current_index] = '\0';
+			args[current_arg++] = atoi(buf);
+			current_index = 0;
+		}
+		else if (isdigit(c))
+		{
+			if (current_index >= 32)
+			{
+				current_arg = 0;
+				current_index = 0;
+				state = normal;
+			}
+			else
+			{
+				buf[current_index++] = c;
+			}
+		}
+		else if (isalpha(c))
+		{
+			buf[current_index] = '\0';
+			args[current_arg++] = atoi(buf);
+
+			switch (c)
+			{
+			case 's': // Save cursor position
+				saved_row = term_row;
+				saved_col = term_column;
+				state = normal;
+				break;
+			case 'u': // Restore cursor position
+				term_row = saved_row;
+				term_column = saved_col;
+				state = normal;
+				break;
+			case 'K': // Erase until the end of line
+				for (uint32_t x = term_column; x < VGA_WIDTH; x++)
+				{
+					VGA_ENTRY(x, term_row) = term_make_entry(' ', term_color);
+				}
+				state = normal;
+				break;
+			case 'H': // Set cursor position
+			case 'f':
+				term_row = args[0];
+				term_column = args[1];
+				break;
+			case 'A': // Cursor up
+				term_row -= args[0];
+				break;
+			case 'B': // Cursor down
+				term_row += args[0];
+				break;
+			case 'C': // Cursor right
+				term_column += args[0];
+				break;
+			case 'D': // Cursor left
+				term_column -= args[0];
+				break;
+			case 'J': // 2J: clear screen & reset cursor
+				if (args[0] == 2)
+				{
+					term_init();
+				}
+				break;
+			}
+
+			if (c == 'm')
+			{ // Set graphics mode
+				for (uint32_t i = 0; i < current_arg; i++)
+				{
+					switch (args[i])
+					{
+					case 0:
+
+						// regular text
+						term_set_blink(false);
+
+						break;
+					case 1:
+						// regular bold text
+						break;
+					case 4:
+						// regular underline text
+						break;
+					case 5:
+						// regular blinking text
+						term_set_blink(true);
+						break;
+					case 30:
+						term_set_fg_color(COLOR_BLACK);
+						break;
+					case 31:
+						term_set_fg_color(COLOR_RED);
+						break;
+					case 32:
+						term_set_fg_color(COLOR_GREEN);
+						break;
+					case 33:
+						term_set_fg_color(COLOR_YELLOW);
+						break;
+					case 34:
+						term_set_fg_color(COLOR_BLUE);
+						break;
+					case 35:
+						term_set_fg_color(COLOR_MAGENTA);
+						break;
+					case 36:
+						term_set_fg_color(COLOR_CYAN);
+						break;
+					case 37:
+						term_set_fg_color(COLOR_WHITE);
+						break;
+					case 40:
+						term_set_bg_color(COLOR_BLACK);
+						break;
+					case 41:
+						term_set_bg_color(COLOR_RED);
+						break;
+					case 42:
+						term_set_bg_color(COLOR_GREEN);
+						break;
+					case 43: // should be "YELLOW" but in blinking mode we can't use anything above COLOR_LIGHT_GREY
+						term_set_bg_color(COLOR_BROWN);
+						break;
+					case 44:
+						term_set_bg_color(COLOR_BLUE);
+						break;
+					case 45:
+						term_set_bg_color(COLOR_MAGENTA);
+						break;
+					case 46:
+						term_set_bg_color(COLOR_CYAN);
+						break;
+					case 47: // should be "WHITE" but in blinking mode we can't use anything above COLOR_LIGHT_GREY
+						term_set_bg_color(COLOR_LIGHT_GREY);
+						break;
+					}
+				}
+			}
+
+			current_arg = 0;
+			current_index = 0;
+			state = normal;
+		}
+	}
+
+	return true;
+}

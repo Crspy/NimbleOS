@@ -1,6 +1,7 @@
 LIBK_CFLAGS:=$(CFLAGS) -D_KERNEL_
 CFLAGS+=-Wno-format
 
+OBJS+=$(patsubst %.cpp,%.o,$(shell find src/ -name '*.cpp'))
 OBJS+=$(patsubst %.c,%.o,$(shell find src/ -name '*.c'))
 OBJS+=$(patsubst %.S,%.o,$(shell find src/ -name '*.S'))
 
@@ -19,6 +20,10 @@ $(LIBC): $(OBJS)
 $(LIBK): $(LIBK_OBJS)
 	$(info [libc] linking $(notdir $@))
 	@$(AR) rcs $@ $(LIBK_OBJS)
+
+%.o: %.cpp
+	$(info [libc] $@)
+	@$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.o: %.c
 	$(info [libc] $@)
