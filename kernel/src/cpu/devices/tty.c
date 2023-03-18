@@ -132,3 +132,4 @@ void term_write(const char* data, uint32_t size) {
 void term_write_string(const char* data) {
 	term_write(data, strlen(data));
 }
+

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
@@ -16,7 +17,7 @@ typedef enum {
 	COLOR_RED,
 	COLOR_MAGENTA,
 	COLOR_BROWN,
-	COLOR_LIGHT_GREY,
+	COLOR_LIGHT_GREY, // Max background color if blinking is enabled (since 7th bit is used for binking)
 	COLOR_DARK_GREY,
 	COLOR_LIGHT_BLUE,
 	COLOR_LIGHT_GREEN,

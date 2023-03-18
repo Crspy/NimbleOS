@@ -2,7 +2,7 @@
 #define IRQ_H
 
 #include <kernel/isr.h>
-
+#include <kernel/pmio.h>
 
 typedef void (*handler_t)(registers_t *);
 

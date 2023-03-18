@@ -21,10 +21,12 @@ LD=$(HOST)-ld
 AR=$(HOST)-ar
 AS=$(HOST)-as
 CC=$(HOST)-gcc
+CXX=$(HOST)-g++
 
 CFLAGS=-O1 -std=gnu11 -ffreestanding -Wall -Wextra
+CXXFLAGS= -O1 -std=c++11 -ffreestanding -Wall -Wextra
 ASFLAGS=--32
-LDFLAGS=-nostdlib -L$(SYSROOT)/usr/lib -m elf_i386
+LDFLAGS=-nostdlib -L$(SYSROOT)/usr/lib -Xlinker -m elf_i386
 
 ifeq ($(UBSAN),1)
 	CFLAGS+=-fsanitize=undefined
@@ -34,6 +36,7 @@ endif
 # clang installation
 
 # CC=clang
+# CXX=clang++
 # LD=ld
 # AR=ar
 # AS=as
@@ -41,6 +44,7 @@ endif
 # CFLAGS+=-mno-mmx -mno-sse -mno-sse2
 
 CC+=--sysroot=$(SYSROOT) -isystem=/$(PREFIX)/include
+CXX+=--sysroot=$(SYSROOT) -isystem=/$(PREFIX)/include
 
 # Make will be called on these folders
 PROJECTS=libc kernel

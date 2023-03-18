@@ -1,9 +1,18 @@
 CFLAGS:=$(CFLAGS) -D_KERNEL_
-LDFLAGS:=$(LDFLAGS) -T linker.ld -Map=linker.map
-LIBS=-lk
+LDFLAGS:=$(LDFLAGS) -T linker.ld -Xlinker -Map=linker.map
+LIBS=-lk -lgcc
 
-OBJS:=$(patsubst %.c,%.o,$(shell find src -name '*.c'))
-OBJS+=$(patsubst %.S,%.o,$(shell find src -name '*.S'))
+CRTI_OBJ=$(patsubst %.S,%.o,$(shell find src -name 'crti.S'))
+CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
+CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
+CRTN_OBJ=$(patsubst %.S,%.o,$(shell find src -name 'crtn.S'))
+
+OBJS+=$(patsubst %.c,%.o,$(shell find src -name '*.c'))
+OBJS+=$(patsubst %.cpp,%.o,$(shell find src -name '*.cpp'))
+OBJS+=$(patsubst %.S,%.o,$(shell find src -name '*.S' ! -name 'crt*.S'))
+
+OBJ_LINK_LIST:=$(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(CRTEND_OBJ) $(CRTN_OBJ)
+INTERNAL_OBJS:=$(CRTI_OBJ) $(OBJS) $(CRTN_OBJ)
 
 LIBK_DEP=$(LIBDIR)/libk.a
 
@@ -12,10 +21,10 @@ SYMBOLS=$(ISO)/modules/symbols.map
 
 .PHONY: all clean build install-headers install-kernel
 
-$(KERNEL) $(SYMBOLS): $(OBJS) $(LIBK_DEP) linker.ld
+$(KERNEL) $(SYMBOLS): $(OBJ_LINK_LIST) $(LIBK_DEP) linker.ld
 	$(info [kernel] linking)
 	@mkdir -p $(ISO)/$(BOOTDIR)
-	@$(LD) $(LDFLAGS) -o $(KERNEL) $(OBJS) $(LIBS)
+	@$(CC) $(LDFLAGS) -o $(KERNEL) $(OBJ_LINK_LIST) $(LIBS)
 	$(info [kernel] generating symbol table)
 	@mkdir -p $(ISO)/modules
 	@awk '$$1 ~ /0x[0-9a-f]{16}/ {print substr($$1, 3), $$2}' linker.map > $(SYMBOLS)
@@ -24,6 +33,10 @@ $(KERNEL) $(SYMBOLS): $(OBJS) $(LIBK_DEP) linker.ld
 %.o: %.c
 	$(info [kernel] $@)
 	@$(CC) -c $< -o $@ $(CFLAGS)
+
+%.o: %.cpp
+	$(info [kernel] $@)
+	@$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 %.o: %.S
 	$(info [kernel] $@)
@@ -37,4 +50,4 @@ install-headers:
 
 clean:
 	$(info [kernel] $@)
-	@rm -f NimbleOS.kernel $(OBJS) *.o */*.o */*/*.o *.map
+	@rm -f NimbleOS.kernel $(INTERNAL_OBJS) *.o */*.o */*/*.o *.map

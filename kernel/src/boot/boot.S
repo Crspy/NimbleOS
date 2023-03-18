@@ -54,6 +54,9 @@ _start:
 	call kernel_main
 	add $12, %esp # cleanup the stack. useless here
 
+	# Call the global destructors
+	call _fini
+
 	# Hang if kernel_main unexpectedly returns.
 	cli
 .Lhang:
