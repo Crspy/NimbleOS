@@ -2,8 +2,9 @@
 #define PMM_H
 
 #include <stdint.h>
+#include <kernel/multiboot.h>
 
-void pmm_init(uint32_t mem);
+void pmm_init(multiboot_info_t* mbi);
 uint32_t pmm_get_map_size();
 void pmm_init_region(uintptr_t addr, uint32_t size);
 void pmm_deinit_region(uintptr_t addr, uint32_t size);
