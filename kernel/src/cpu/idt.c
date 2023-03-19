@@ -12,8 +12,6 @@ void idt_init() {
 	idt_entry_ptr.limit = sizeof(idt_entry_t)*256 - 1;
 	idt_entry_ptr.base = (uint32_t) &idt_entries;
 
-	memset(&idt_entries, 0, sizeof(idt_entry_t)*256);
-
 	idt_set_entry(0, (uint32_t)  isr0,   GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(1, (uint32_t)  isr1,   GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(2, (uint32_t)  isr2,   GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
@@ -28,6 +26,7 @@ void idt_init() {
 	idt_set_entry(11, (uint32_t) isr11,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(12, (uint32_t) isr12,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(13, (uint32_t) isr13,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(14, (uint32_t) isr14,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(15, (uint32_t) isr15,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(16, (uint32_t) isr16,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(17, (uint32_t) isr17,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
@@ -46,7 +45,7 @@ void idt_init() {
 	idt_set_entry(30, (uint32_t) isr30,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(31, (uint32_t) isr31,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 
-	idt_load((uint32_t) &idt_entry_ptr);
+	idt_load((uintptr_t) &idt_entry_ptr);
 }
 
 void idt_set_entry(uint8_t num, uint32_t base, uint16_t selector, uint8_t flags) {

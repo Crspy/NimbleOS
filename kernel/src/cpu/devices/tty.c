@@ -6,10 +6,10 @@
 
 #define VGA_ENTRY(x, y) term_buffer[(y)*VGA_WIDTH + (x)]
 
-uint32_t term_row;
-uint32_t term_column;
-uint8_t term_color;
-uint16_t *term_buffer;
+static uint32_t term_row;
+static uint32_t term_column;
+static uint8_t term_color;
+static uint16_t *term_buffer;
 
 // Helper functions
 static uint8_t term_make_color(term_vga_color fg, term_vga_color bg)

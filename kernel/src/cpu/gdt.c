@@ -35,8 +35,6 @@
 
 gdt_entry_t gdt_entries[5];
 gdt_entry_ptr_t gdt_ptr;
-idt_entry_t idt_entries[256];
-idt_entry_ptr_t idt_entry_ptr;
 
 void gdt_init() {
 	
@@ -49,7 +47,7 @@ void gdt_init() {
 	gdt_set_entry(3, 0, 0xFFFFFFFF, GDT_CODE_PL3_ACCESS, GDT_SEG_FLAGS); // User mode code segment
 	gdt_set_entry(4, 0, 0xFFFFFFFF, GDT_DATA_PL3_ACCESS, GDT_SEG_FLAGS); // User mode data segment
 
-	gdt_load((uint32_t) &gdt_ptr);
+	gdt_load((uintptr_t) &gdt_ptr);
 }
 
 void gdt_set_entry(uint32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags) {

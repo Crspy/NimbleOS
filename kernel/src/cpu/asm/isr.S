@@ -58,8 +58,10 @@ ISR_NOERR 31
 isr_common_handler:
 	pushal       
 
-	mov %ds, %ax   # save data segment selector
-	push %eax
+	push %ds
+	push %es
+	push %fs
+	push %gs
 
 	mov $GDT_SELECTOR_DATA0, %ax
 	mov %ax, %ds
@@ -71,11 +73,10 @@ isr_common_handler:
 	call isr_handler
 	add $4, %esp
 
-	pop %eax      # restore data segment selector
-	mov %ax, %ds
-	mov %ax, %es
-	mov %ax, %fs
-	mov %ax, %gs
+	pop %ds
+	pop %es
+	pop %fs
+	pop %gs
 
 	popal
 	add $8, %esp # clean up the pushed arguments (err code , isr no)

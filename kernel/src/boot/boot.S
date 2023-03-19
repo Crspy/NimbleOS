@@ -5,6 +5,9 @@
 .set FLAGS,				FLAGS_PAGE_ALIGN | FLAGS_MEMORY /*| FLAGS_GRAPHICS*/
 .set CHECKSUM,			-(MAGIC + FLAGS)
 
+.set KERNEL_VIRT_OFFSET,	0xC0000000
+.set KERNEL_PAGE_NUMBER,  (KERNEL_VIRT_OFFSET >> 22)
+
 # Declare a header as in the Multiboot Standard.
 .section .multiboot
 	.align 4
@@ -30,15 +33,44 @@ stack_bottom:
 	.skip 16384 # 16 KiB
 stack_top:
 
+.section .data
+.global kernel_directory
+.align 0x1000
+kernel_directory:
+    .long 0x00000083 							# identity map first 4 MB of physical memory
+    .fill (KERNEL_PAGE_NUMBER - 1), 4, 0   		# null entries (0x0)
+    .long 0x00000083 							# identity map the 4MB after KERNEL_VIRT_OFFSET
+    .fill (1024 - KERNEL_PAGE_NUMBER - 1), 4, 0 # null entries (0x0)
+
+
 # The kernel entry point.
 .section .text
 .global _start
 .type _start, @function
 _start:
+   	mov $(kernel_directory - KERNEL_VIRT_OFFSET), %ecx
+    mov %ecx, %cr3
+
+    # Enable PSE for 4 MiB pages
+    mov %cr4, %ecx
+    or $0x00000010, %ecx
+    mov %ecx, %cr4
+
+	# Set PG bit in CR0 to enable paging.
+    mov %cr0, %ecx
+    or $0x80000000, %ecx
+    mov %ecx, %cr0
+
+    lea _start_higher_half, %ecx
+    jmp *%ecx
+
+_start_higher_half:
 	movl $stack_top, %esp
+	mov $0, %ebp # initialize for backtraces
 
 	# Save %eax that contains the magic number
 	pushl %eax
+	add $KERNEL_VIRT_OFFSET, %ebx
 	# Save %ebx that contains the multiboot header address
 	pushl %ebx
 
@@ -63,4 +95,4 @@ _start:
 	hlt
 	jmp .Lhang
 
-.size _start, . - _start
+

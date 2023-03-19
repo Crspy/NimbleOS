@@ -13,8 +13,6 @@ void irq_init(void)
 {
 	irq_remap(32,40);
 
-	memset(irq_handlers, 0, 256 * sizeof(handler_t));
-
 	idt_set_entry(32, (uint32_t)irq0, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(33, (uint32_t)irq1, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(34, (uint32_t)irq2, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
