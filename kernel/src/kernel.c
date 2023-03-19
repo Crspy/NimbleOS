@@ -11,6 +11,7 @@
 #include <kernel/idt.h>
 #include <kernel/irq.h>
 #include <kernel/timer.h>
+#include <kernel/keyboard.h>
 #include <kernel/pmm.h>
 #include <kernel/paging.h>
 
@@ -35,6 +36,7 @@ void kernel_main(multiboot_info_t *mbi, uint32_t magic)
 	idt_init();
 	irq_init();
 	timer_init();
+	keyboard_init();
 	pmm_init(mbi);
 	paging_init();
 

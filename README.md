@@ -3,9 +3,13 @@
 My first hobby OS to get into the world of OS Engineering.\
 currently only supports :
 - :white_check_mark: multboot compliant kernel
+- :white_check_mark: higher half kernel
 - :white_check_mark: 80x25 text mode
+- :white_check_mark: Handle hardware exceptions and IRQs
 - :white_check_mark: IPT Timer
-
+- :white_check_mark: PS2 Keyboard
+- :white_check_mark: Memory paging
+- :white_check_mark: Physical memory manager (PMM)
 
 ## Building & running
 
