@@ -51,7 +51,7 @@ _start:
    	mov $(kernel_directory - KERNEL_VIRT_OFFSET), %ecx
     mov %ecx, %cr3
 
-    # Enable PSE for 4 MiB pages
+    # Enable PSE for 4 MB pages
     mov %cr4, %ecx
     or $0x00000010, %ecx
     mov %ecx, %cr4

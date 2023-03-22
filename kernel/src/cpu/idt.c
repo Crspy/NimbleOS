@@ -45,6 +45,8 @@ void idt_init() {
 	idt_set_entry(30, (uint32_t) isr30,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 	idt_set_entry(31, (uint32_t) isr31,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
 
+	idt_set_entry(48, (uint32_t) isr48,  GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS); // syscall
+
 	idt_load((uintptr_t) &idt_entry_ptr);
 }
 

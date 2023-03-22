@@ -1,71 +1,84 @@
+#include <stdint.h>
+#include <string.h>
+#include <assert.h>
+#include <stdio.h>
 #include <kernel/irq.h>
 #include <kernel/cpu.h>
 #include <kernel/idt.h>
 #include <kernel/pmio.h>
-#include <stdint.h>
-#include <string.h>
 
-#include <stdio.h>
-
-static handler_t irq_handlers[256];
+static handler_t irq_handlers[16];
 
 void irq_init(void)
 {
-	irq_remap(32,40);
+	irq_remap(IRQ0,IRQ8);
 
-	idt_set_entry(32, (uint32_t)irq0, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(33, (uint32_t)irq1, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(34, (uint32_t)irq2, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(35, (uint32_t)irq3, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(36, (uint32_t)irq4, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(37, (uint32_t)irq5, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(38, (uint32_t)irq6, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(39, (uint32_t)irq7, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(40, (uint32_t)irq8, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(41, (uint32_t)irq9, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(42, (uint32_t)irq10, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(43, (uint32_t)irq11, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(44, (uint32_t)irq12, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(45, (uint32_t)irq13, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(46, (uint32_t)irq14, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(47, (uint32_t)irq15, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ0, (uint32_t)irq0, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ1, (uint32_t)irq1, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ2, (uint32_t)irq2, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ3, (uint32_t)irq3, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ4, (uint32_t)irq4, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ5, (uint32_t)irq5, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ6, (uint32_t)irq6, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ7, (uint32_t)irq7, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ8, (uint32_t)irq8, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ9, (uint32_t)irq9, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ10, (uint32_t)irq10, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ11, (uint32_t)irq11, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ12, (uint32_t)irq12, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ13, (uint32_t)irq13, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ14, (uint32_t)irq14, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ15, (uint32_t)irq15, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+
+	STI();
 }
 
 void irq_handler(registers_t *regs)
 {
-	if (irq_handlers[regs->int_no])
-	{
-		handler_t handler = irq_handlers[regs->int_no];
+	uint32_t irq = regs->int_no;
+
+	assert(irq <= IRQ15);
+
+	// Handle spurious interrupts
+	// Only for IRQ7 and IRQ15 when you're using the PIC/s.
+	// For IRQ7, check the master PIC's ISR to see if it was a real IRQ7 or not. If it wasn't, don't send an EOI or anything.
+	// For IRQ15, check the slave PIC's ISR to see if it was a real IRQ15 or not. If it wasn't, send an EOI to the master PIC but not to the slave PIC.
+	if (irq == IRQ7 || irq == IRQ15) {
+		uint16_t active_irq_mask = irq_get_isr();
+		uint8_t current_irq_mask = 1 << (irq - IRQ0);
+		if (!(active_irq_mask & current_irq_mask)) {
+			if (irq == IRQ15) {
+				outportb(PIC1_CMD, PIC_EOI); // send EOI to master PIC only
+			}
+
+			STI();
+			return;
+		}
+	}
+
+	irq_send_eoi(irq);
+
+	handler_t handler = irq_handlers[irq - IRQ0];
+
+	if (handler) {
 		handler(regs);
 	}
-	else
-	{
-		printf("Unhandled IRQ%u\n",regs->int_no);
+	else {
+		printf("Unhandled IRQ%d\n", irq - IRQ0);
 	}
 
-	// Don't annoy the PIC with software interrupts
-	if (regs->int_no >= IRQ0 && regs->int_no <= IRQ15)
-	{
-		irq_send_eoi(regs->int_no);
-
-	}
 	STI(); // re-enable interrupts since they were disabled at isr handler in assembly
 }
 
-void irq_register_handler(uint8_t irq, handler_t handler)
-{
-	CLI();
+void irq_register_handler(uint8_t irq, handler_t handler) {
+	assert(irq >= IRQ0 && irq <= IRQ15);
 
-	if (!irq_handlers[irq])
-	{
-		irq_handlers[irq] = handler;
+	if (!irq_handlers[irq - IRQ0]) {
+		irq_handlers[irq - IRQ0] = handler;
 	}
-	else
-	{
+	else {
 		printf("IRQ %d already registered\n", irq);
 	}
-
-	STI();
 }
 
 

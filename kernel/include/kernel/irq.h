@@ -23,22 +23,22 @@ void irq_unmask(uint8_t irq);
 
 
 // exported from irq.S
-void irq0();
-void irq1();
-void irq2();
-void irq3();
-void irq4();
-void irq5();
-void irq6();
-void irq7();
-void irq8();
-void irq9();
-void irq10();
-void irq11();
-void irq12();
-void irq13();
-void irq14();
-void irq15();
+extern void irq0();
+extern void irq1();
+extern void irq2();
+extern void irq3();
+extern void irq4();
+extern void irq5();
+extern void irq6();
+extern void irq7();
+extern void irq8();
+extern void irq9();
+extern void irq10();
+extern void irq11();
+extern void irq12();
+extern void irq13();
+extern void irq14();
+extern void irq15();
 
 #define PIC1 0x20 /* IO base address for master PIC */
 #define PIC2 0xA0 /* IO base address for slave PIC */
@@ -47,7 +47,9 @@ void irq15();
 #define PIC2_CMD PIC2
 #define PIC2_DATA (PIC2 + 1)
 
+
 #define PIC_EOI 0x20 /* End-of-interrupt command code */
+#define PIC_ISR 0x0B
 
 #define IRQ0 32
 #define IRQ1 33
@@ -83,6 +85,15 @@ static inline void irq_send_eoi(uint32_t irq)
 
     // we have to send an EOI to the master regardless of the IRQ source
     outportb(PIC1_CMD, PIC_EOI);
+}
+
+/* Returns the combined value of the cascaded PICs in-service register */
+static inline uint16_t irq_get_isr()
+{
+	outportb(PIC1, PIC_ISR);
+	outportb(PIC2, PIC_ISR);
+
+	return (inportb(PIC2) << 8) | inportb(PIC1);
 }
 
 #endif

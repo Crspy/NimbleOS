@@ -14,10 +14,9 @@
 #include <kernel/keyboard.h>
 #include <kernel/pmm.h>
 #include <kernel/paging.h>
+#include <kernel/syscall.h>
 
-extern uint32_t KERNEL_BEGIN;
 extern uint32_t KERNEL_BEGIN_PHYS;
-extern uint32_t KERNEL_END;
 extern uint32_t KERNEL_END_PHYS;
 extern uint32_t KERNEL_SIZE;
 
@@ -39,6 +38,7 @@ void kernel_main(multiboot_info_t *mbi, uint32_t magic)
 	keyboard_init();
 	pmm_init(mbi);
 	paging_init();
+	syscall_init();
 
 	uint32_t time = 0;
 	while (1)
