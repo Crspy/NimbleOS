@@ -15,7 +15,7 @@ void timer_init() {
 	outportb(PIT_0, divisor & 0xFF);
 	outportb(PIT_0, (divisor >> 8) & 0xFF);
 
-	irq_register_handler(IRQ0, timer_callback);
+	irq_register_handler(TIMER_IRQ, timer_callback);
 }
 
 void timer_callback(registers_t* regs) {

@@ -55,10 +55,6 @@ void term_init(void)
 	}
 }
 
-void term_setcolor(term_vga_color fg, term_vga_color bg)
-{
-	term_color = term_make_color(fg, bg);
-}
 
 void term_set_blink(bool blink)
 {
@@ -152,17 +148,14 @@ void term_putchar(char c)
 	term_putchar_at(c, term_column++, term_row);
 }
 
-void term_write(const char* data, uint32_t size)
-{
-	for (uint32_t i = 0; i < size; i++)
-	{
+void term_write(const uint8_t* data, uint32_t size) {
+	for (uint32_t i = 0; i < size; i++) {
 		term_putchar(data[i]);
 	}
 }
 
-void term_write_string(const char* data)
-{
-	term_write(data, strlen(data));
+void term_write_string(const uint8_t* data) {
+	term_write(data, strlen((char*)data));
 }
 
 // Getters

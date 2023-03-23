@@ -3,6 +3,8 @@
         "cpu.h": "c",
         "tty.h": "c",
         "stdio.h": "c",
-        "isr.h": "c"
+        "isr.h": "c",
+        "gdt.h": "c",
+        "string.h": "c"
     }
 }

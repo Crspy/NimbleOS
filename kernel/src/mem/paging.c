@@ -6,7 +6,8 @@
 #include <kernel/paging.h>
 #include <kernel/pmm.h>
 #include <kernel/isr.h>
-
+#include <kernel/tty.h>
+#include <kernel/kheap.h>
 
 #define DIRECTORY_INDEX(x) ((x) >> 22)
 #define TABLE_INDEX(x) (((x) >> 12) & 0x3FF)
@@ -38,6 +39,11 @@ void paging_init() {
 	uint32_t heap_pages = (KERNEL_HEAP_END_VIRT - KERNEL_HEAP_BASE_VIRT) / PAGE_SIZE;
 	uintptr_t heap_phys = pmm_alloc_pages(heap_pages);
 	paging_map_pages(KERNEL_HEAP_BASE_VIRT, heap_phys, heap_pages, PAGE_RW);
+
+
+	// Map tty VGA memory
+	paging_map_page(KERNEL_VGA_BASE_VIRT,VGA_MEMORY,PAGE_RW);
+	term_set_buffer((uint16_t*)KERNEL_VGA_BASE_VIRT);
 }
 
 uintptr_t paging_get_kernel_directory() {
@@ -104,13 +110,13 @@ void paging_unmap_page(uintptr_t virt) {
 	page_entry_t* page = paging_get_page(virt, false);
 
 	if (page) {
-		
+
 		page->present = 0;
 		paging_invalidate_page(virt);
 	}
 	else
 	{
-		printf("[VMM] Tried to unmap a page that doesn't exist with virt address %p\n",virt);
+		printf("[VMM] Tried to unmap a page that doesn't exist with virt address %p\n", virt);
 	}
 }
 

@@ -24,28 +24,66 @@ extern uint32_t KERNEL_SIZE;
 
 void process_1()
 {
-	while(true)
+	while (true)
 	{
 		asm volatile(
 			"mov $2022,%ecx\n"
 			"push %ecx\n"
-			"mov $0,%eax\n"
-			"int $48\n"
 			"pop %ecx");
 	}
 
 }
 void process_2()
 {
-
-	volatile int i = 1414;
-	while(i != 0)
+	while (true)
 	{
-		i--;
+		asm volatile(
+			"mov $1414,%ecx\n"
+
+			);
 	}
+}
+
+void process_3()
+{
 	asm volatile(
-		"mov $1,%eax\n"
-		"int $48\n"); // exit
+		"mov $3, %eax\n" // putchar
+		"mov $'H', %ebx\n" // H
+		"int $0x30\n"
+		"mov $'e', %ebx\n" // e
+		"int $0x30\n"
+		"mov $'l', %ebx\n" // l
+		"int $0x30\n"
+		"mov $'l', %ebx\n" // l
+		"int $0x30\n"
+		"mov $'o', %ebx\n" // o
+		"int $0x30\n"
+		"mov $',', %ebx\n" // ,
+		"int $0x30\n"
+		"mov $' ', %ebx\n" //  ' '
+		"int $0x30\n"
+		"mov $'w', %ebx\n" // w
+		"int $0x30\n"
+		"mov $'o', %ebx\n" // o
+		"int $0x30\n"
+		"mov $'r', %ebx\n" // r
+		"int $0x30\n"
+		"mov $'l', %ebx\n" // l
+		"int $0x30\n"
+		"mov $'d', %ebx\n" // d
+		"int $0x30\n"
+		"mov $'\n', %ebx\n" // '\n'
+		"int $0x30\n"
+
+		// syscall_wait 10 seconds (not working yet)
+		"mov $2, %eax\n"
+		"mov $10, %ebx\n"
+		"int $0x30\n"
+
+		"mov $1, %eax\n"  // # process exit
+		"int $0x30\n"
+
+		);
 }
 
 void kernel_main(multiboot_info_t* mbi, uint32_t magic)
@@ -71,10 +109,9 @@ void kernel_main(multiboot_info_t* mbi, uint32_t magic)
 
 
 
-	proc_run_code(process_1, 64);
-	proc_run_code(process_2, 64);
-	//proc_run_code(p2, sizeof(p2));
-
+	proc_run_code(process_1, 128);
+	proc_run_code(process_2, 128);
+	proc_run_code(process_3, 128);
 	proc_print_processes();
 
 	proc_init();

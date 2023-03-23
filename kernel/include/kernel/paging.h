@@ -72,6 +72,7 @@ uintptr_t paging_virt_to_phys(uintptr_t virt);
  // 4 MB of heap space
 #define KERNEL_HEAP_BASE_VIRT 0xD0000000
 #define KERNEL_HEAP_END_VIRT 0xD0400000 
+#define KERNEL_VGA_BASE_VIRT (KERNEL_HEAP_BASE_VIRT - PAGE_SIZE)
 
 #define P2V(addr) ((uintptr_t)(addr) + KERNEL_BASE_VIRT)
 #define V2P(addr) ((uintptr_t)(addr) - KERNEL_BASE_VIRT)

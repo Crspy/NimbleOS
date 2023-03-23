@@ -4,11 +4,6 @@
 #include <kernel/idt.h>
 #include <kernel/cpu.h>
 
-// Segment Selector
-//  format: [ 15                        3 | 2| 1 0 ]
-//          [           13-bits index     |TI| RPL ]
-#define SEG_SELECTOR_REQUESTED_PRIV(x)        (((x) &  0x03))   // RPL Set privilege level (0 - 3)
-#define SEG_SELECTOR_TI(x)      				((x) << 1) // specifies which descriptor table to use. If clear (0) then the GDT is used, if set (1) then the current LDT is used.
 
 // access bits
 #define SEG_LONG(x)      ((x) << 1 << 4) // Long mode

@@ -10,7 +10,7 @@ double timer_get_time();
 void timer_register_callback(handler_t handler);
 
 #define TIMER_IRQ IRQ0
-#define TIMER_FREQ 1000 // in HZ
+#define TIMER_FREQ 10 // in HZ
 #define TIMER_QUOTIENT 1193182
 
 #define PIT_0 0x40

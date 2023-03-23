@@ -49,6 +49,12 @@ typedef struct {
     uint32_t ssp;
 } __attribute__ ((packed)) tss_entry_t;
 
+// Segment Selector
+//  format: [ 15                        3 | 2| 1 0 ]
+//          [           13-bits index     |TI| RPL ]
+#define SEG_SELECTOR_REQUESTED_PRIV(x)        (((x) &  0x03))   // RPL Set privilege level (0 - 3)
+#define SEG_SELECTOR_TI(x)      				((x) << 1) // specifies which descriptor table to use. If clear (0) then the GDT is used, if set (1) then the current LDT is used.
+
 
 void gdt_init();
 void gdt_set_entry(uint32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags);

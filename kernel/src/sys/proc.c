@@ -4,15 +4,17 @@
 #include <kernel/paging.h>
 #include <kernel/pmm.h>
 #include <kernel/gdt.h>
+#include <kernel/cpu.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-process_t* current_process;
-uint32_t process_counter = 0;
+static process_t* current_process;
+static uint32_t next_pid = 1;
 
 void proc_init() {
+	timer_register_callback(&proc_timer_callback);
 	proc_switch_process(NULL);
 }
 
@@ -24,35 +26,34 @@ void proc_run_code(uint8_t* code, int len) {
 	uintptr_t code_phys = pmm_alloc_aligned_large_page();
 	uintptr_t stack_phys = pmm_alloc_aligned_large_page();
 	// Don't forget that the stack grows backwards, hence the `+ ...`
-	uintptr_t kernel_stack = (uintptr_t)kmalloc(1024*4) + 1024*4; // This ought to be enough for any process...
+	uintptr_t kernel_stack = (uintptr_t)kmalloc(1024 * 4) + 1024 * 4; // This ought to be enough for any process...
 	// Copy the kernel page directory
 	paging_map_page(KERNEL_HEAP_END_VIRT, pd_phys, PAGE_RW); // Temporary mapping after the kernel heap
 	memcpy((void*)KERNEL_HEAP_END_VIRT, (void*)0xFFFFF000, PAGE_SIZE);
-	
+
 	// Map our code and stack pages (they are 4 MiB pages)
 	directory_entry_t* pd = (directory_entry_t*)KERNEL_HEAP_END_VIRT;
-	pd[1].raw_val = code_phys | PAGE_PRESENT | PAGE_USER | PAGE_RW | PAGE_LARGE;
+	pd[0].raw_val = code_phys | PAGE_PRESENT | PAGE_USER | PAGE_RW | PAGE_LARGE;
 	pd[767].raw_val = stack_phys | PAGE_PRESENT | PAGE_RW | PAGE_USER | PAGE_LARGE;
-	
 	paging_unmap_page(KERNEL_HEAP_END_VIRT); // Remove the temporary mapping
 	// Write the given code to memory. TODO: compute number of pages to allocate
-	
+
 	paging_map_page(KERNEL_HEAP_END_VIRT, code_phys, PAGE_RW);
 	memcpy((void*)KERNEL_HEAP_END_VIRT, code, len);
 	paging_unmap_page(KERNEL_HEAP_END_VIRT);
 
-	*process = (process_t) {
-		.pid = process_counter++, // TODO: dynamic PID attribution
+	*process = (process_t){
+		.pid = next_pid++,
 		.code_len = 1024,
 		.stack_len = 1024,
 		.directory = pd_phys,
 		.kernel_stack = kernel_stack,
 		.registers = (registers_t) {
-			.eip = 0x400000,
+			.eip = 0x000000,
 			.esp = 0xBFFFFFFB,
 			.useresp = 0xBFFFFFFB,
-			.cs = 0x1B,
-			.ds = 0x23,
+			.cs = GDT_SELECTOR_CODE3 | SEG_SELECTOR_REQUESTED_PRIV(3),
+			.ds = GDT_SELECTOR_DATA3 | SEG_SELECTOR_REQUESTED_PRIV(3),
 		}
 	};
 
@@ -61,23 +62,25 @@ void proc_run_code(uint8_t* code, int len) {
 		process_t* p = current_process->next;
 		current_process->next = process;
 		process->next = p;
-	} else if (!current_process) {
+	}
+	else if (!current_process) {
 		current_process = process;
 		current_process->next = current_process;
 	}
+
 }
 
 void proc_print_processes() {
 	process_t* p = current_process->next;
 
-	printf("Process chain: 0x%X -> ", current_process);
+	printf("Process chain: %d -> ", current_process->pid);
 
 	while (p != current_process) {
-		printf("0x%X -> ", p);
+		printf("%d -> ", p->pid);
 		p = p->next;
 	}
 
-	printf("\n");
+	printf("(loop)\n");
 }
 
 process_t* proc_current_process() {
@@ -85,16 +88,16 @@ process_t* proc_current_process() {
 }
 
 void proc_exit_current_process() {
-	
-	directory_entry_t* pd = (directory_entry_t*) 0xFFFFF000;
 
-	uintptr_t code_page = pd[1].frame;
+	directory_entry_t* pd = (directory_entry_t*)0xFFFFF000;
+
+	uintptr_t code_page = pd[0].frame;
 	uintptr_t stack_page = pd[767].frame;
 	uintptr_t pd_page = pd[1023].frame;
 
 	pmm_free_pages(code_page, current_process->code_len); // Large pages
 	pmm_free_pages(stack_page, current_process->stack_len);
-	
+
 	pmm_free_page(pd_page);
 
 	// Remove the process from our circular list
@@ -113,17 +116,17 @@ void proc_exit_current_process() {
 	p->next = next_current;
 
 	//kfree(current_process);
-	
+
 	// We set the current process to the one right before the one we want
 	// because `proc_switch_process` will grab current_process->next
 	current_process = p;
-
+	proc_print_processes(); // debug
 	proc_switch_process(NULL);
 }
 
-/* Will be used to implement preemptive multitasking
+/* Switches process on clock tick.
  */
-void proc_timer_tic_handler(registers_t* regs) {
+void proc_timer_callback(registers_t* regs) {
 	if (!current_process || current_process->next == current_process) {
 		return;
 	}
@@ -133,15 +136,16 @@ void proc_timer_tic_handler(registers_t* regs) {
 	}
 }
 
-/* Saves the execution context of the current process, then switches execution
- * to the next process in the list.
+
+/* Saves the execution context `regs` of the current process, then switches
+ * execution to the next process in the list.
  * Passing `regs = NULL` can be useful when the old process is of no interest.
  */
 void proc_switch_process(registers_t* regs) {
 	if (regs) {
 		current_process->registers = *regs;
 	}
-	
+
 	current_process = current_process->next;
 
 	if (!current_process) {
@@ -149,14 +153,20 @@ void proc_switch_process(registers_t* regs) {
 		abort();
 	}
 
+	// Print the current PID in the bottom right of the screen
+	printf("\x1B[s\x1B[24;78H");
+	printf("\x1B[K");
+	printf("%d", current_process->pid);
+	printf("\x1B[u");
+
 	// This sets the stack pointer that will be used when an inter-privilege
 	// interrupt happens
 	gdt_set_kernel_stack(current_process->kernel_stack);
-	
+
 
 	// Switch back to the process' page directoy
 	paging_switch_directory(current_process->directory);
-	
+
 	// Setup the stack as if we were coming from usermode because of an interrupt,
 	// then interrupt-return to usermode. We make sure to push the correct value
 	// value for %esp and %eip
@@ -167,14 +177,14 @@ void proc_switch_process(registers_t* regs) {
 		"push $0x23\n"    // user ds selector
 		"mov %0, %%eax\n"
 		"push %%eax\n"    // %esp
-		"push $512\n"     // %eflags with 9th bit set to allow calling interrupts
+		"push $512\n"     // %eflags with `IF` bit set, equivalent to calling `sti`
 		"push $0x1B\n"    // user cs selector
 		"mov %1, %%eax\n"
 		"push %%eax\n"    // %eip
 		"iret\n"
 		:                 /* read registers: none */
-		: "r" (esp_val), "r" (eip_val) /* inputs %0 and %1 stored anywhere */
+	: "r" (esp_val), "r" (eip_val) /* inputs %0 and %1 stored anywhere */
 		: "%eax"          /* registers clobbered by hand in there */
-	);
-	
+		);
+
 }

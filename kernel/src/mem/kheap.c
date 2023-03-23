@@ -1,3 +1,4 @@
+#include <kernel/paging.h>
 #include <kernel/kheap.h>
 
 static uint8_t* heap_pointer = (uint8_t*)KERNEL_HEAP_BASE_VIRT;
@@ -17,4 +18,19 @@ void* kmalloc(uint32_t size) {
 	heap_pointer += size;
 
 	return previous_heap;
+}
+
+/* Aligned memory allocator.
+ * Returns `size` bytes of memory at an address multiple of `align`.
+ */
+void* kamalloc(uint32_t size, uint32_t align) {
+	uintptr_t next = (((uintptr_t)heap_pointer / align) + 1) * align;
+
+	if (next + size >= KERNEL_HEAP_END_VIRT) {
+		return NULL;
+	}
+
+	heap_pointer = (uint8_t*)(next + size);
+
+	return (uint8_t*)next;
 }
