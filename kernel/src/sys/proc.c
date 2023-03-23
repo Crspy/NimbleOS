@@ -35,7 +35,9 @@ void proc_run_code(uint8_t* code, uint32_t len) {
 	directory_entry_t* pd = (directory_entry_t*)KERNEL_HEAP_END_VIRT;
 	pd[1023].raw_val = pd_phys | PAGE_PRESENT | PAGE_RW;
 
-	for (uint32_t i = 0; i < (KERNEL_BASE_VIRT >> 22); i++) {
+
+#define KERNEL_PAGE_DIR_INDEX (KERNEL_BASE_VIRT >> 22)
+	for (uint32_t i = 0; i < KERNEL_PAGE_DIR_INDEX; i++) {
 		pd[i].raw_val = 0; // Unmap everything below the kernel
 	}
 	
@@ -54,7 +56,7 @@ void proc_run_code(uint8_t* code, uint32_t len) {
 		
 	memcpy((void*)0x00000000, (void*)code, len);
 	
-	// Remove RW flag on code pages
+	// Remove write flag on code pages
 	for (uint32_t i = 0; i < num_code_pages; i++) {
 		page_entry_t* p = paging_get_page(0x00000000 + i * PAGE_SIZE, false, 0);
 		p->rw = 0;
@@ -76,9 +78,9 @@ void proc_run_code(uint8_t* code, uint32_t len) {
 		.kernel_stack = kernel_stack,
 		.registers = (registers_t) {
 			.eip = 0x000000,
-			.useresp = KERNEL_BASE_VIRT-4,
-			.cs = GDT_SELECTOR_CODE3 | SEG_SELECTOR_REQUESTED_PRIV(3),
-			.ds = GDT_SELECTOR_DATA3 | SEG_SELECTOR_REQUESTED_PRIV(3),
+			.esp = KERNEL_BASE_VIRT-4,
+			.cs = GDT_SELECTOR_USER_CODE | SEG_SELECTOR_REQUESTED_PRIV(3),
+			.ds = GDT_SELECTOR_USER_DATA | SEG_SELECTOR_REQUESTED_PRIV(3),
 		}
 	};
 
@@ -173,6 +175,7 @@ void proc_timer_callback(registers_t* regs) {
  * Passing `regs = NULL` can be useful when the old process is of no interest.
  */
 void proc_switch_process(registers_t* regs) {
+	
 	if (regs) {
 		current_process->registers = *regs;
 	}
@@ -201,21 +204,24 @@ void proc_switch_process(registers_t* regs) {
 	// Setup the stack as if we were coming from usermode because of an interrupt,
 	// then interrupt-return to usermode. We make sure to push the correct value
 	// value for %esp and %eip
-	uint32_t esp_val = current_process->registers.useresp;
-	uint32_t eip_val = current_process->registers.eip;
-	//printf("esp_val:%p\n",esp_val);
+	uint32_t esp = current_process->registers.esp;
+	uint32_t eip = current_process->registers.eip;
+	uint32_t eflags = current_process->registers.eflags;
+
 	asm volatile (
 		"push $0x23\n"    // user ds selector
-		"mov %0, %%eax\n"
+		"mov %[esp], %%eax\n"
 		"push %%eax\n"    // %esp
-		"push $512\n"     // %eflags with `IF` bit set, equivalent to calling `sti`
+		"mov %[eflags], %%eax\n"
+		"or $512, %%eax\n"
+		"push %%eax\n"    // %eflags with `IF` bit set, equivalent to calling `sti`
 		"push $0x1B\n"    // user cs selector
-		"mov %1, %%eax\n"
+		"mov %[eip], %%eax\n"
 		"push %%eax\n"    // %eip
-		"iret\n"
-		:                 /* read registers: none */
-	: "r" (esp_val), "r" (eip_val) /* inputs %0 and %1 stored anywhere */
-		: "%eax"          /* registers clobbered by hand in there */
-		);
 
+		"iret\n"
+		: // [name] "mode" (var), where "r" is in register, "m" from memory
+		: [esp] "r" (esp), [eflags] "r" (eflags), [eip] "r" (eip)
+		: "%eax"
+	);
 }

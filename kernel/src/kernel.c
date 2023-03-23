@@ -100,6 +100,7 @@ void kernel_main(multiboot_info_t* mbi, uint32_t magic)
 
 	gdt_init();
 	idt_init();
+	isr_init();
 	irq_init();
 	timer_init();
 	keyboard_init();

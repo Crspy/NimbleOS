@@ -39,7 +39,7 @@ irq_common_handler:
 	push %fs
 	push %gs
 
-	mov $GDT_SELECTOR_DATA0, %ax
+	mov $GDT_SELECTOR_KERNEL_DATA, %ax
 	mov %ax, %ds
 	mov %ax, %es
 	mov %ax, %fs

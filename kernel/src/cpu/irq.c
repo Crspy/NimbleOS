@@ -10,35 +10,42 @@
 
 static handler_t irq_handlers[16] = { NULL };
 
+/* This file is responsible for handling hardware interrupts, IRQs.
+ */
+
+/* Points IDT entries 32 to 47 to our IRQ handlers.
+ * Those are defined in `irq.S`, and are responsible for calling `irq_handler`
+ * below.
+ */
 void irq_init(void)
 {
 	irq_remap(IRQ0,IRQ8);
 
-	idt_set_entry(IRQ0, (uint32_t)irq0, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ1, (uint32_t)irq1, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ2, (uint32_t)irq2, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ3, (uint32_t)irq3, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ4, (uint32_t)irq4, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ5, (uint32_t)irq5, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ6, (uint32_t)irq6, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ7, (uint32_t)irq7, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ8, (uint32_t)irq8, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ9, (uint32_t)irq9, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ10, (uint32_t)irq10, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ11, (uint32_t)irq11, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ12, (uint32_t)irq12, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ13, (uint32_t)irq13, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ14, (uint32_t)irq14, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
-	idt_set_entry(IRQ15, (uint32_t)irq15, GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);
+	idt_set_entry(IRQ0, (uint32_t)irq0, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ1, (uint32_t)irq1, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ2, (uint32_t)irq2, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ3, (uint32_t)irq3, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ4, (uint32_t)irq4, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ5, (uint32_t)irq5, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ6, (uint32_t)irq6, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ7, (uint32_t)irq7, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ8, (uint32_t)irq8, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ9, (uint32_t)irq9, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ10, (uint32_t)irq10, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ11, (uint32_t)irq11, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ12, (uint32_t)irq12, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ13, (uint32_t)irq13, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ14, (uint32_t)irq14, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
+	idt_set_entry(IRQ15, (uint32_t)irq15, GDT_SELECTOR_KERNEL_CODE, IDT_INT_KERNEL);
 
 	STI();
 }
 
+/* Calls the handler associated with calling IRQ, if any.
+ */
 void irq_handler(registers_t *regs)
 {
 	uint32_t irq = regs->int_no;
-
-	assert(irq <= IRQ15);
 
 	// Handle spurious interrupts
 	// Only for IRQ7 and IRQ15 when you're using the PIC/s.
@@ -68,7 +75,7 @@ void irq_handler(registers_t *regs)
 		printf("[IRQ] Unhandled IRQ%d\n", irq - IRQ0);
 	}
 
-	STI(); // re-enable interrupts since they were disabled at isr handler in assembly
+	STI(); // re-enable interrupts
 }
 
 void irq_register_handler(uint8_t irq, handler_t handler) {

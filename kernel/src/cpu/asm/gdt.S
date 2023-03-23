@@ -9,13 +9,14 @@ gdt_load:
 	mov 4(%esp), %eax
 	lgdt (%eax)
 
-	mov $GDT_SELECTOR_DATA0, %ax  
+	# Reload segment registers
+	mov $GDT_SELECTOR_KERNEL_DATA, %ax  
 	mov %ax, %ds
 	mov %ax, %es
 	mov %ax, %fs
 	mov %ax, %gs
 	mov %ax, %ss
-	ljmp $GDT_SELECTOR_CODE0, $load 
+	ljmp $GDT_SELECTOR_KERNEL_CODE, $load # reload 'cs' segment
 load:
 	ret
 
