@@ -106,7 +106,7 @@ void kernel_main(multiboot_info_t* mbi, uint32_t magic)
 	pmm_init(mbi);
 	paging_init();
 	syscall_init();
-
+	
 
 
 	proc_run_code(process_1, 128);
@@ -115,6 +115,7 @@ void kernel_main(multiboot_info_t* mbi, uint32_t magic)
 	proc_print_processes();
 
 	proc_init();
+	printf("bruh\n");
 
 	uint32_t time = 0;
 	while (1)

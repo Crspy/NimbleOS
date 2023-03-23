@@ -54,10 +54,10 @@ uintptr_t paging_get_kernel_directory() {
  * page table entry. Usually, this entry is then filled with appropriate page
  * information such as the physical address it points to, whether it is writable
  * etc...
- * If the `create` flag is passed, the corresponding page is created if needed
- * and this function should never return NULL.
+ * If the `create` flag is passed, the corresponding page table is created with
+ * the passed flags if needed and this function should never return NULL.
  */
-page_entry_t* paging_get_page(uintptr_t virt, bool create) {
+page_entry_t* paging_get_page(uintptr_t virt, bool create, uint32_t flags) {
 	if (virt % PAGE_SIZE) {
 		printf("[VMM] Tried to access a page at an unaligned address!\n");
 		abort();
@@ -69,11 +69,13 @@ page_entry_t* paging_get_page(uintptr_t virt, bool create) {
 	directory_entry_t* dir = (directory_entry_t*)0xFFFFF000; // references last entry in page_directory which is self referencing
 	page_entry_t* table = ((page_entry_t*)0xFFC00000) + (PAGE_ENTRIES * dir_index);
 
-	if (!(dir[dir_index].present && create)) {
+	if (!dir[dir_index].present && create) {
 		page_entry_t* new_table = (page_entry_t*)pmm_alloc_page();
-		dir[dir_index].raw_val = (uint32_t)new_table | PAGE_PRESENT | PAGE_RW;
+		dir[dir_index].raw_val = (uint32_t)new_table | PAGE_PRESENT | PAGE_RW  | (flags & PAGE_FLAGS);
 		memset((void*)table, 0x00, PAGE_SIZE);
 	}
+
+
 
 	if (dir[dir_index].present) {
 		return &table[table_index];
@@ -84,12 +86,12 @@ page_entry_t* paging_get_page(uintptr_t virt, bool create) {
 
 // TODO: refuse 4 MB pages
 void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags) {
-	page_entry_t* page = paging_get_page(virt, true);
+	page_entry_t* page = paging_get_page(virt, true , flags);
 
 	if (page->present) {
 		printf("[VMM] Tried to map an already mapped virtual address 0x%X to 0x%X\n",
 			virt, phys);
-		printf("[VMM] Previous mapping: 0x%X to 0x%X\n", virt, page->frame);
+		printf("[VMM] Previous mapping: 0x%X to 0x%X\n", virt, page->raw_val & PAGE_FRAME);
 		abort();
 	}
 
@@ -107,7 +109,7 @@ void paging_map_pages(uintptr_t virt, uintptr_t phys, uint32_t num, uint32_t fla
 
 
 void paging_unmap_page(uintptr_t virt) {
-	page_entry_t* page = paging_get_page(virt, false);
+	page_entry_t* page = paging_get_page(virt, false, 0);
 
 	if (page) {
 
@@ -152,7 +154,7 @@ void paging_fault_handler(registers_t* regs) {
 	printf("when a process tried to %s it.\n", err & 0x02 ? "write to" : "read from");
 	printf("This process was in %s mode.\n", err & 0x04 ? "user" : "kernel");
 
-	page_entry_t* page = paging_get_page(cr2 & PAGE_FRAME, false);
+	page_entry_t* page = paging_get_page(cr2 & PAGE_FRAME, false, 0);
 
 	if (page) {
 		printf("The page was in %s mode.\n", page->user ? "user" : "kernel");
@@ -165,12 +167,12 @@ void paging_fault_handler(registers_t* regs) {
 }
 
 uintptr_t paging_virt_to_phys(uintptr_t virt) {
-	page_entry_t* p = paging_get_page(virt & PAGE_FRAME, false);
+	page_entry_t* p = paging_get_page(virt & PAGE_FRAME, false , 0);
 
 	if (!p)
 		return 0;
 
-	return p->frame + PAGE_OFFSET(virt);
+	return (p->raw_val & PAGE_FRAME) + PAGE_OFFSET(virt);
 }
 
 

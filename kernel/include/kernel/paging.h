@@ -46,7 +46,7 @@ typedef union
 
 void paging_init();
 uintptr_t paging_get_kernel_directory();
-page_entry_t* paging_get_page(uintptr_t virt, bool create);
+page_entry_t* paging_get_page(uintptr_t virt, bool create, uint32_t flags);
 void paging_map_page(uintptr_t virt, uintptr_t phys, uint32_t flags);
 void paging_map_pages(uintptr_t virt, uintptr_t phys, uint32_t num, uint32_t flags);
 void paging_unmap_page(uintptr_t virt);
