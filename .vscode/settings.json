@@ -2,6 +2,7 @@
     "files.associations": {
         "cpu.h": "c",
         "tty.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "isr.h": "c"
     }
 }

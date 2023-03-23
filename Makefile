@@ -74,7 +74,7 @@ $(PROJECTS): $(PROJECT_HEADERS) | $(TARGETROOT) $(LIBDIR)
 kernel: libc
 
 qemu: NimbleOS.iso
-	qemu-system-i386 --accel kvm -m 64M -cdrom NimbleOS.iso -monitor stdio -s -no-reboot -no-shutdown -serial file:serial.log
+	qemu-system-x86_64 --accel kvm -m 512M  -cdrom NimbleOS.iso -monitor stdio -s -no-reboot -no-shutdown -serial file:serial.log
 	cat serial.log
 
 bochs: NimbleOS.iso

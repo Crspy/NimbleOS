@@ -44,6 +44,13 @@ uintptr_t paging_get_kernel_directory() {
 	return V2P(&kernel_directory);
 }
 
+/* Given a page-aligned virtual address, returns a pointer to the corresponding
+ * page table entry. Usually, this entry is then filled with appropriate page
+ * information such as the physical address it points to, whether it is writable
+ * etc...
+ * If the `create` flag is passed, the corresponding page is created if needed
+ * and this function should never return NULL.
+ */
 page_entry_t* paging_get_page(uintptr_t virt, bool create) {
 	if (virt % PAGE_SIZE) {
 		printf("[VMM] Tried to access a page at an unaligned address!\n");
@@ -97,8 +104,13 @@ void paging_unmap_page(uintptr_t virt) {
 	page_entry_t* page = paging_get_page(virt, false);
 
 	if (page) {
+		
 		page->present = 0;
 		paging_invalidate_page(virt);
+	}
+	else
+	{
+		printf("[VMM] Tried to unmap a page that doesn't exist with virt address %p\n",virt);
 	}
 }
 
@@ -121,7 +133,7 @@ void paging_invalidate_cache() {
 }
 
 void paging_invalidate_page(uintptr_t virt) {
-	asm volatile ("invlpg (%0)" :: "b"(virt) : "memory");
+	asm volatile("invlpg (%0)" ::"r" (virt) : "memory");
 }
 
 void paging_fault_handler(registers_t* regs) {
@@ -134,7 +146,7 @@ void paging_fault_handler(registers_t* regs) {
 	printf("when a process tried to %s it.\n", err & 0x02 ? "write to" : "read from");
 	printf("This process was in %s mode.\n", err & 0x04 ? "user" : "kernel");
 
-	page_entry_t* page = paging_get_page(cr2, false);
+	page_entry_t* page = paging_get_page(cr2 & PAGE_FRAME, false);
 
 	if (page) {
 		printf("The page was in %s mode.\n", page->user ? "user" : "kernel");

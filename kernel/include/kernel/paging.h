@@ -61,12 +61,20 @@ uintptr_t paging_virt_to_phys(uintptr_t virt);
 
 
 #define KERNEL_BASE_VIRT 0xC0000000
-// 764 MB of heap space
+
+/* We assume here that the kernel code data and stack as setup by our linker
+ * script ends before addresses 0xD0000000, which is a fair guess, as long as
+ * our kernel occupies less than 255 MiB of memory.
+ * We could also use the `KERNEl_END_PHYS` linker symbol to avoid making these
+ * assumptions, and probably to gain address space, but having clear separations
+ * has advantages in debugging.
+ */
+ // 4 MB of heap space
 #define KERNEL_HEAP_BASE_VIRT 0xD0000000
-#define KERNEL_HEAP_END_VIRT 0xFFC00000 // address of recursive page dir
+#define KERNEL_HEAP_END_VIRT 0xD0400000 
 
 #define P2V(addr) ((uintptr_t)(addr) + KERNEL_BASE_VIRT)
-#define V2P(addr) ((uintptr_t)(addr)-KERNEL_BASE_VIRT)
+#define V2P(addr) ((uintptr_t)(addr) - KERNEL_BASE_VIRT)
 
 #define PAGE_PRESENT (1 << 0)
 #define PAGE_RW (1 << 1)

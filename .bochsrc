@@ -2,7 +2,7 @@ ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 ata0-master: type=cdrom, path="NimbleOS.iso", status=inserted
 boot: cdrom
 log: xbochs.log
-megs: 128
+megs: 512
 magic_break: enabled=1
 mouse: type=imps2, enabled=1
 com1: enabled=1, mode=file, dev=serial.log

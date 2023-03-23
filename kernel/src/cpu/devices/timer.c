@@ -6,6 +6,7 @@
 
 
 volatile uint32_t current_tick = 0;
+static handler_t callback;
 
 void timer_init() {
 	uint32_t divisor = TIMER_QUOTIENT / TIMER_FREQ;
@@ -17,15 +18,28 @@ void timer_init() {
 	irq_register_handler(IRQ0, timer_callback);
 }
 
-void timer_callback(registers_t*) {
+void timer_callback(registers_t* regs) {
 	current_tick++;
+	if (callback) {
+		callback(regs);
+	}
 }
 
 uint32_t timer_get_tick() {
 	return current_tick;
 }
 
-double timer_get_time()
-{
-	return current_tick* (1.0/TIMER_FREQ);
+/* Returns the time since boot in seconds
+ */
+double timer_get_time() {
+	return current_tick * (1.0 / TIMER_FREQ);
+}
+
+void timer_register_callback(handler_t handler) {
+	if (callback) {
+		printf("[TIMER] Callback already registered!\n");
+		printf("[TIMER] Add support for multiple callbacks!\n");
+	} else {
+		callback = handler;
+	}
 }
