@@ -1,7 +1,9 @@
+#include <stdio.h>
+
 #include <kernel/timer.h>
 #include <kernel/irq.h>
 #include <kernel/pmio.h>
-#include <stdio.h>
+
 
 volatile uint32_t current_tick = 0;
 

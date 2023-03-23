@@ -1,9 +1,14 @@
-#include <kernel/isr.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
-static char* exception_msgs[] = {
+#include <kernel/isr.h>
+
+
+#define ISR_COUNT 256
+#define ISR_EXCEPTION_COUNT 32
+
+static char* exception_msgs[ISR_EXCEPTION_COUNT] = {
     "Division By Zero",
     "Debugger",
     "Non-Maskable Interrupt",
@@ -47,10 +52,10 @@ static void print_registers(registers_t* reg)
     printf("eip=0x%x, cs=0x%x, ss=0x%x, eflags=0x%x, useresp=0x%x\n", reg->eip, reg->ss, reg->eflags, reg->useresp);
 }
 
-static handler_t isr_handlers[256];
+static handler_t isr_handlers[ISR_COUNT];
 
 void isr_handler(registers_t* regs) {
-    assert(regs->int_no < 256);
+    assert(regs->int_no < ISR_COUNT);
 
     if (isr_handlers[regs->int_no]) {
         handler_t handler = isr_handlers[regs->int_no];
@@ -58,14 +63,14 @@ void isr_handler(registers_t* regs) {
     }
     else {
         printf("Unhandled hardware exception %d: %s\n", regs->int_no,
-            regs->int_no < 32 ? exception_msgs[regs->int_no] : "Unknown");
+            regs->int_no < ISR_EXCEPTION_COUNT ? exception_msgs[regs->int_no] : "Unknown");
         print_registers(regs);
         abort();
     }
 }
 
 void isr_register_handler(uint32_t num, handler_t handler) {
-	assert(num < 256);
+	assert(num < ISR_COUNT);
 
     if (isr_handlers[num]) {
         printf("Exception handler %d (%s) already registered\n", num,

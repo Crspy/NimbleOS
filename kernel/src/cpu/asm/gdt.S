@@ -18,3 +18,10 @@ gdt_load:
 	ljmp $GDT_SELECTOR_CODE0, $load 
 load:
 	ret
+
+.global tss_load
+.type tss_load, @function
+tss_load:
+	mov 4(%esp), %eax
+	ltr %ax
+	ret

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+
 #include <kernel/cpu.h>
 #include <kernel/idt.h>
 

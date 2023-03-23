@@ -51,7 +51,7 @@ void pmm_init(multiboot_info_t* mbi) {
 	pmm_deinit_region((uintptr_t)0, (uint32_t)&KERNEL_END_PHYS + max_blocks / 8);
 
 	printf("[PMM] Memory stats: available: \x1B[32m%dMB", available / (1024 * 1024));
-	printf("\x1B[37m unavailable: \x1B[32m%dKiB\x1B[37m\n", unavailable / 1024);
+	printf("\x1B[37m unavailable: \x1B[32m%dKB\x1B[37m\n", unavailable / 1024);
 
 
 }
@@ -107,11 +107,11 @@ uintptr_t pmm_alloc_page() {
 uintptr_t pmm_alloc_aligned_large_page() {
 
 	/* Strategy:
-	 * Find an 8 MiB section of memory. In there, we are guaranteed to find an
-	 * address that is 4 MiB-aligned. Return that, mark 4 MiB as taken.
+	 * Find an 8 MB section of memory. In there, we are guaranteed to find an
+	 * address that is 4 MB-aligned. Return that, mark 4 MB as taken.
 	 */
 	 // TODO: generalize
-	if (max_blocks - used_blocks < 2 * 1024) { // 4MiB
+	if (max_blocks - used_blocks < 2 * 1024) { // 4MB
 		return 0;
 	}
 

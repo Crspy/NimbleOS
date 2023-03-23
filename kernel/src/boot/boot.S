@@ -30,7 +30,7 @@
 # Reserve a stack for the initial thread.
 .section .bootstrap_stack, "aw", @nobits
 stack_bottom:
-	.skip 16384 # 16 KiB
+	.skip 16384 # 16 KB
 stack_top:
 
 .section .data

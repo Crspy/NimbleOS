@@ -22,10 +22,11 @@ extern uint32_t KERNEL_SIZE;
 
 void kernel_main(multiboot_info_t *mbi, uint32_t magic)
 {
+
 	term_init();
 	printf("Welcome to \x1B[33mNimble OS\x1B[37m v1.0 !\n\n");
 
-	printf("Kernel loaded at 0x%X, ending at 0x%X (%dKiB)\n", &KERNEL_BEGIN_PHYS, &KERNEL_END_PHYS,
+	printf("Kernel loaded at 0x%X, ending at 0x%X (%dKB)\n", &KERNEL_BEGIN_PHYS, &KERNEL_END_PHYS,
 		   ((uint32_t)&KERNEL_SIZE) / 1024);
 
 	assert(magic == MULTIBOOT_BOOTLOADER_MAGIC);

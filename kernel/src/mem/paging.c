@@ -1,11 +1,12 @@
-#include <kernel/paging.h>
-#include <kernel/pmm.h>
 #include <string.h>
-#include <kernel/isr.h>
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <kernel/paging.h>
+#include <kernel/pmm.h>
+#include <kernel/isr.h>
+
 
 #define DIRECTORY_INDEX(x) ((x) >> 22)
 #define TABLE_INDEX(x) (((x) >> 12) & 0x3FF)
@@ -25,7 +26,7 @@ void paging_init() {
 	paging_invalidate_page(0xFFC00000);
 
 
-	// in boot.S we already identity mapped the first 4MiB using big size flag
+	// in boot.S we already identity mapped the first 4MB using big size flag
 	// so we "undo" that here because we only need to identity map the 1st MB
 	kernel_directory[0].raw_val = 0;
 	paging_invalidate_page(0x00000000); // let it take effect
@@ -34,7 +35,7 @@ void paging_init() {
 	current_page_directory = kernel_directory;
 
 	// Map the kernel heap
-	uint32_t heap_pages = (KERNEL_HEAP_END_VIRT - KERNEL_HEAP_BASE_VIRT) / 4096;
+	uint32_t heap_pages = (KERNEL_HEAP_END_VIRT - KERNEL_HEAP_BASE_VIRT) / PAGE_SIZE;
 	uintptr_t heap_phys = pmm_alloc_pages(heap_pages);
 	paging_map_pages(KERNEL_HEAP_BASE_VIRT, heap_phys, heap_pages, PAGE_RW);
 }

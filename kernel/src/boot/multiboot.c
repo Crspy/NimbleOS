@@ -1,6 +1,8 @@
-#include <kernel/multiboot.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#include <kernel/multiboot.h>
+
 
 void dump_multiboot_info(multiboot_info_t *mbi)
 {

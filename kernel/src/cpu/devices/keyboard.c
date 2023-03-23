@@ -1,7 +1,9 @@
+#include <stdio.h>
+
 #include <kernel/keyboard.h>
 #include <kernel/irq.h>
 #include <kernel/pmio.h>
-#include <stdio.h>
+
 
 uint8_t keyboard_buffer[512];
 uint32_t buf_length;
