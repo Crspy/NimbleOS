@@ -8,7 +8,7 @@
 #include <kernel/idt.h>
 #include <kernel/pmio.h>
 
-static handler_t irq_handlers[16];
+static handler_t irq_handlers[16] = { NULL };
 
 void irq_init(void)
 {

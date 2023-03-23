@@ -1,12 +1,12 @@
 #include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <assert.h>
 
 #include <kernel/isr.h>
 
 
-#define ISR_COUNT 256
-#define ISR_EXCEPTION_COUNT 32
+
 
 static char* exception_msgs[ISR_EXCEPTION_COUNT] = {
     "Division By Zero",
@@ -52,7 +52,7 @@ static void print_registers(registers_t* reg)
     printf("eip=0x%x, cs=0x%x, ss=0x%x, eflags=0x%x, useresp=0x%x\n", reg->eip, reg->ss, reg->eflags, reg->useresp);
 }
 
-static handler_t isr_handlers[ISR_COUNT];
+static handler_t isr_handlers[ISR_COUNT] = { NULL };
 
 void isr_handler(registers_t* regs) {
     assert(regs->int_no < ISR_COUNT);

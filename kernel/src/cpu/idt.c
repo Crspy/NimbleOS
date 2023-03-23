@@ -3,14 +3,15 @@
 
 #include <kernel/cpu.h>
 #include <kernel/idt.h>
+#include <kernel/isr.h>
 
-static idt_entry_t idt_entries[256];
+static idt_entry_t idt_entries[ISR_COUNT];
 static idt_entry_ptr_t idt_entry_ptr;
 
 
 
 void idt_init() {
-	idt_entry_ptr.limit = sizeof(idt_entry_t)*256 - 1;
+	idt_entry_ptr.limit = sizeof(idt_entries) - 1;
 	idt_entry_ptr.base = (uint32_t) &idt_entries;
 
 	idt_set_entry(0, (uint32_t)  isr0,   GDT_SELECTOR_CODE0, IDT_ENTRY_FLAGS);

@@ -1,11 +1,13 @@
 #include <stdio.h>
+#include <stddef.h>
+
 #include <kernel/syscall.h>
 #include <kernel/isr.h>
 
 
 static void syscall_handler(registers_t* regs);
 
-sys_handler_t syscall_handlers[256];
+sys_handler_t syscall_handlers[SYSCALL_COUNT] = {NULL};
 
 void syscall_init() {
 	isr_register_handler(48, &syscall_handler);
