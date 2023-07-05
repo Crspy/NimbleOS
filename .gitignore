@@ -13,3 +13,4 @@ misc/grub.cfg
 misc/root
 isodir
 sysroot
+build
